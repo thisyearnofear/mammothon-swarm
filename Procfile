@@ -1,1 +1,1 @@
-web: uvicorn src.api.serve:app --host 0.0.0.0 --port $PORT 
+web: cd src && uvicorn api.serve:app --host 0.0.0.0 --port $PORT 

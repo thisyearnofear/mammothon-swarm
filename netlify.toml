@@ -1,6 +1,7 @@
 [build]
-  publish = "src/static"
-  command = "echo 'No build command needed for static files'"
+  base = "src/static"
+  publish = "."
+  command = "echo 'Static files ready for deployment'"
 
 [[redirects]]
   from = "/*"

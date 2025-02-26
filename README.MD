@@ -2,6 +2,16 @@
 
 A reimagining of the Million Dollar Homepage for abandoned hackathon projects. Instead of pixels, we have AI agents representing hackathon projects seeking revival.
 
+## Deployment Status
+
+- Frontend: [![Netlify Status](https://api.netlify.com/api/v1/badges/your-site-id/deploy-status)](https://app.netlify.com/sites/mammothon/deploys)
+- Backend: [![Koyeb Status](https://img.shields.io/badge/koyeb-deployed-success)](https://kind-gwenora-papajams-0ddff9e5.koyeb.app/health)
+
+### Live URLs
+
+- Frontend: https://mammothon.netlify.app
+- Backend API: https://kind-gwenora-papajams-0ddff9e5.koyeb.app/api
+
 ## How It Works
 
 1. **The Homepage**: Five AI agents (plus Wooly, the guide) represent abandoned hackathon projects
@@ -406,3 +416,117 @@ For questions, ideas, or collaborations, please reach out via:
 ---
 
 Join us in redefining project advocacy, decentralized innovation, and community-driven project resurrection with the Mammothon Agent Swarm!
+
+## Project Status & Handover
+
+### Completed by Papa (Frontend & Initial Setup)
+
+- [x] Basic project structure and architecture
+- [x] Frontend implementation with dynamic agent loading
+- [x] Responsive chat interface with animations
+- [x] Agent appearance customization (SVG mammoth designs)
+- [x] Initial Gemini AI integration
+- [x] Basic API routing and server setup
+- [x] Deployment pipeline (Netlify frontend, Koyeb backend)
+- [x] Environment configuration and security
+- [x] Chat functionality for all agents
+- [x] Project documentation and README
+
+### To Be Implemented by Pallasite (Backend & Web3)
+
+#### Phase 1: SwarmNode Migration (Current Priority)
+
+- [ ] Migrate agents from direct Gemini integration to SwarmNode
+  - Study performance differences between direct Gemini vs. SwarmNode
+  - Implement persistent storage for chat history
+  - Set up agent scheduling for automated updates
+  - Document SwarmNode advantages and implementation details
+
+#### Phase 2: Data Layer Implementation
+
+- [ ] Conduit Integration
+
+  - Set up Conduit indexing for on-chain data
+  - Implement real-time data updates
+  - Create API endpoints for blockchain data queries
+  - Document Conduit integration process
+
+- [ ] Celestia Integration
+  - Design data schema for project metadata
+  - Implement data availability layer
+  - Create storage handlers for NFT records
+  - Document Celestia integration process
+
+#### Phase 3: Smart Contract Development
+
+- [ ] NFT Contract Implementation
+  - Design builder commitment contract
+  - Implement early advocate NFT minting
+  - Create secondary market functionality
+  - Document smart contract architecture
+
+### Development Environment
+
+#### Backend Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/thisyearnofear/mammothon-swarm.git
+cd mammothon-swarm
+
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API keys
+```
+
+#### Running Locally
+
+```bash
+# Start the backend server
+uvicorn src.api.serve:app --reload --port 8001
+
+# Frontend is served statically through the backend
+# Visit http://localhost:8001
+```
+
+#### Deployment
+
+```bash
+# Frontend (Netlify)
+git push origin master  # Netlify auto-deploys from master
+
+# Backend (Koyeb)
+git push origin master  # Koyeb auto-deploys from master
+```
+
+Required environment variables for backend:
+
+- `GEMINI_API_KEY`: For AI model access
+- `SWARMNODE_API_KEY`: For agent deployment
+- `PORT`: Server port (default: 8000)
+
+## Technical Resources for Handover
+
+### SwarmNode Resources
+
+- [SwarmNode Documentation](https://docs.swarmnode.io)
+- [Python Agent Examples](https://github.com/swarmnode/examples)
+- [Agent Scheduling Guide](https://docs.swarmnode.io/scheduling)
+
+### Web3 Integration Resources
+
+- [Conduit Quick Start](https://docs.conduit.xyz/quick-start)
+- [Celestia Data Availability](https://docs.celestia.org/developers/data-availability)
+- [NFT Contract Examples](https://docs.openzeppelin.com/contracts/4.x/erc721)
+
+## Contact & Handover
+
+- Frontend/Design: [@papa](https://warpcast.com/papa)
+- Backend/Web3: [@pallasite99](https://github.com/pallasite99)
