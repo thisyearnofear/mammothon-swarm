@@ -1,7 +1,12 @@
 import { apiBaseUrl } from "./config.js";
 
+// Add debugging
+console.log("Agents.js loaded");
+console.log("API Base URL:", apiBaseUrl);
+
 class Agent {
   constructor(config) {
+    console.log(`Initializing agent: ${config.name}`);
     this.id = config.id;
     this.name = config.name;
     this.type = config.type;
@@ -13,6 +18,7 @@ class Agent {
   }
 
   setupElements() {
+    console.log(`Setting up elements for ${this.name}`);
     this.button = document.getElementById(`${this.id}-button`);
     this.backdrop = document.getElementById(`${this.id}-backdrop`);
     this.chatContainer = document.getElementById(`${this.id}-chat`);
@@ -23,6 +29,12 @@ class Agent {
     this.typingIndicator = document.getElementById(
       `${this.id}-typing-indicator`
     );
+
+    // Check if elements were found
+    if (!this.button) console.error(`Button for ${this.name} not found`);
+    if (!this.backdrop) console.error(`Backdrop for ${this.name} not found`);
+    if (!this.chatContainer)
+      console.error(`Chat container for ${this.name} not found`);
   }
 
   setupEventListeners() {

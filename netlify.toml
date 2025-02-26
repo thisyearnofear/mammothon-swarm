@@ -9,9 +9,13 @@
     echo 'Copying static files...' &&
     mkdir -p public &&
     cp static/index.html public/ &&
+    cp static/test.html public/ &&
     if [ -d "static/css" ]; then cp -r static/css public/; fi &&
     if [ -d "static/images" ]; then cp -r static/images public/; fi &&
     if [ -d "static/components" ]; then cp -r static/components public/; fi &&
+    echo 'Checking build output:' &&
+    ls -la public/ &&
+    ls -la public/js/ &&
     echo 'Build complete!'
   """
 
@@ -34,6 +38,11 @@
     
 [[headers]]
   for = "/*.js"
+    [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/js/*"
     [headers.values]
     Content-Type = "application/javascript"
 
