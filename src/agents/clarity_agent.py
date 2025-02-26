@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import google.generativeai as genai
 from pydantic import BaseModel
@@ -13,7 +13,6 @@ load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
-    # Set default safety settings
     safety_settings = {
         "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
         "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
@@ -46,21 +45,25 @@ class ChatResponse(BaseModel):
     project_info: Optional[dict] = None
 
 # Project information
-WOOLY_INFO = {
-    "name": "Wooly",
-    "description": "Your guide to the Mammothon Agent Swarm project",
-    "capabilities": [
-        "Explain the Mammothon Agent Swarm project",
-        "Guide users through available agents",
-        "Help with project navigation",
-        "Provide technical documentation"
-    ],
-    "project_overview": """
-    Mammothon Agent Swarm reimagines the Million Dollar Homepage by turning abandoned 
-    hackathon projects into dynamic, AI-powered agents. These agents explain each 
-    project's vision and technical details, invite new builders to take over via a 
-    staking mechanism, and incentivize early community advocates through limited-edition NFTs.
-    """
+CLARITY_INFO = {
+    "name": "Clarity",
+    "description": "A payment gateway designed to tackle fake reviews by enabling seamless, verifiable on-chain payments and reviews.",
+    "links": {
+        "github": "https://github.com/Royleong31/Clarity",
+        "frontend_demo1": "https://d3e8hw77ywlb9l.cloudfront.net/",
+        "frontend_demo2": "https://d1tp69exgyan2y.cloudfront.net/",
+        "hackathon": "https://ethglobal.com/showcase/clarity-c2us8"
+    },
+    "problem": {
+        "overview": "Fake reviews mislead consumers, create unfair competition, erode trust, and distort marketplace dynamics.",
+        "impact": "Up to 42% of reviews on major platforms could be fake, costing global businesses over $152 billion annually.",
+        "key_issues": [
+            "Automated bots generating fake reviews in bulk",
+            "Multiple accounts from single users",
+            "Censored or edited reviews by platforms",
+            "Lack of transparency in review systems"
+        ]
+    }
 }
 
 def get_chat_response(messages: List[Message]) -> str:
@@ -68,19 +71,18 @@ def get_chat_response(messages: List[Message]) -> str:
     if not gemini_api_key:
         return "I'm sorry, I'm not properly configured. Please ensure the GEMINI_API_KEY is set."
 
-    # Create the system prompt with README content
     system_prompt = """
-    You are Wooly, the central guide for the Mammothon Agent Swarm project.
+    You are Clarity, an AI agent representing a payment gateway project that tackles fake reviews through blockchain technology. 
     
     Your first message should be similar to this format:
-    "Welcome to Mammothon Agent Swarm! We're reimagining the Million Dollar Homepage for abandoned hackathon projects. Check out our <a href='https://github.com/thisyearnofear/mammothon-swarm'>frontend</a> and <a href='https://github.com/pallasite99/pixelate_backend'>backend</a> repositories. Built during the Mammothon hackathon hosted by Celestia and Conduit, we're creating a space where AI agents represent abandoned projects, helping them find new builders and supporters. How can I guide you today?"
+    "Tired of fake reviews? Clarity is a blockchain-powered payment gateway that ensures review authenticity, tackling a $152B problem. Try our <a href='https://d3e8hw77ywlb9l.cloudfront.net/'>demo</a>, check out our <a href='https://github.com/Royleong31/Clarity'>GitHub repository</a>, or learn about our <a href='https://ethglobal.com/showcase/clarity-c2us8'>ETHGlobal submission</a>. Ready to bring trust back to reviews?"
     
     For subsequent messages:
-    1. Explain how the platform works (staking, NFTs, AI agents)
-    2. Guide users to specific project agents based on their interests
-    3. Help with technical documentation and project structure
+    1. Explain how blockchain verification ensures review authenticity
+    2. Help users understand how they can revive the project by staking
+    3. Focus on the practical impact of solving the fake review problem
     
-    Be concise, friendly, and focused on helping users understand and navigate the project.
+    Be concise, clear, and focused on the mission to restore trust in online reviews.
     """
 
     try:
@@ -97,7 +99,7 @@ def get_chat_response(messages: List[Message]) -> str:
         
         # Generate response using Gemini
         model = genai.GenerativeModel('gemini-1.5-pro')
-        prompt = f"{system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as Wooly, focusing on project guidance:"
+        prompt = f"{system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as Clarity:"
         
         response = model.generate_content(
             prompt,
@@ -115,12 +117,12 @@ def get_chat_response(messages: List[Message]) -> str:
 
 @app.get("/")
 async def root():
-    """Root endpoint with basic information about Wooly."""
-    return WOOLY_INFO
+    """Root endpoint with basic information about Clarity."""
+    return CLARITY_INFO
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    """Chat with Wooly."""
+    """Chat with Clarity."""
     response = get_chat_response(request.messages)
     
     # Include project info only in the first message
@@ -128,7 +130,7 @@ async def chat(request: ChatRequest):
     
     return ChatResponse(
         response=response,
-        project_info=WOOLY_INFO if include_project_info else None
+        project_info=CLARITY_INFO if include_project_info else None
     )
 
 @app.get("/health")

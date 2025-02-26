@@ -12,6 +12,7 @@ class Agent {
 
   setupElements() {
     this.button = document.getElementById(`${this.id}-button`);
+    this.backdrop = document.getElementById(`${this.id}-backdrop`);
     this.chatContainer = document.getElementById(`${this.id}-chat`);
     this.closeButton = document.getElementById(`${this.id}-close-button`);
     this.chatBody = document.getElementById(`${this.id}-chat-body`);
@@ -25,6 +26,9 @@ class Agent {
   setupEventListeners() {
     this.button.addEventListener("click", () => this.toggleChat());
     this.closeButton.addEventListener("click", () => this.closeChat());
+    this.backdrop.addEventListener("click", (e) => {
+      if (e.target === this.backdrop) this.closeChat();
+    });
     this.sendButton.addEventListener("click", () => this.sendMessage());
     this.chatInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") this.sendMessage();
@@ -32,7 +36,7 @@ class Agent {
   }
 
   toggleChat() {
-    this.button.style.display = "none";
+    this.backdrop.style.display = "flex";
     this.chatContainer.style.display = "flex";
     if (!this.chatInitialized) {
       this.initializeChat();
@@ -40,18 +44,23 @@ class Agent {
   }
 
   closeChat() {
+    this.backdrop.style.display = "none";
     this.chatContainer.style.display = "none";
-    this.button.style.display = "flex";
   }
 
   async initializeChat() {
     this.showTypingIndicator();
     try {
-      const response = await fetch(`/api/${this.type}/chat`, {
+      const response = await fetch(`${apiBaseUrl}/${this.type}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [
+            {
+              role: "system",
+              content:
+                "Please provide brief, focused responses. Keep explanations under 3 sentences when possible.",
+            },
             {
               role: "user",
               content: `Hello, can you tell me about ${this.name}?`,
@@ -63,6 +72,11 @@ class Agent {
       this.hideTypingIndicator();
       this.addMessage(`Hello, can you tell me about ${this.name}?`, "user");
       this.addMessage(data.response, "assistant");
+      this.messages.push({
+        role: "system",
+        content:
+          "Please provide brief, focused responses. Keep explanations under 3 sentences when possible.",
+      });
       this.messages.push({
         role: "user",
         content: `Hello, can you tell me about ${this.name}?`,
@@ -91,7 +105,7 @@ class Agent {
       this.showTypingIndicator();
 
       try {
-        const response = await fetch(`/api/${this.type}/chat`, {
+        const response = await fetch(`${apiBaseUrl}/${this.type}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ messages: this.messages }),
@@ -117,7 +131,7 @@ class Agent {
       "message",
       role === "user" ? "user-message" : "assistant-message"
     );
-    messageDiv.textContent = content;
+    messageDiv.innerHTML = content;
     this.chatBody.insertBefore(messageDiv, this.typingIndicator);
     this.chatBody.scrollTop = this.chatBody.scrollHeight;
   }
@@ -146,6 +160,18 @@ const agentConfigs = [
     name: "Wooly",
     type: "wooly",
     description: "Your guide to the Mammothon Agent Swarm project",
+  },
+  {
+    id: "clarity",
+    name: "Clarity",
+    type: "clarity",
+    description: "Blockchain-powered payment gateway for authentic reviews",
+  },
+  {
+    id: "hwc",
+    name: "Worldie",
+    type: "hwc",
+    description: "Your friendly guide to getting started with Ethereum",
   },
 ];
 

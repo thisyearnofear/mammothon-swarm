@@ -20,6 +20,13 @@ gemini_api_key = os.getenv("GEMINI_API_KEY")
 # Configure Gemini
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
+    # Set default safety settings
+    safety_settings = {
+        "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
+        "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
+        "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
+        "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
+    }
 
 # Initialize FastAPI app
 app = FastAPI(title="Mammothon Agent Swarm", 
@@ -93,9 +100,15 @@ def get_ai_explanation(project_description, model_type="gemini"):
     
     if model_type == "gemini" and gemini_api_key:
         try:
-            model = genai.GenerativeModel('gemini-pro')
+            model = genai.GenerativeModel('gemini-1.5-pro')
             response = model.generate_content(
-                f"Explain the following project in simple terms, highlighting its potential and why someone might want to revive it: {project_description}"
+                f"Explain the following project in simple terms, highlighting its potential and why someone might want to revive it: {project_description}",
+                safety_settings=safety_settings,
+                generation_config={
+                    "temperature": 0.7,
+                    "top_p": 0.8,
+                    "top_k": 40
+                }
             )
             return response.text
         except Exception as e:
@@ -107,23 +120,18 @@ def get_ai_explanation(project_description, model_type="gemini"):
 def get_chat_response(messages, model_type="gemini"):
     """Generate a response to a chat message using either OpenAI or Gemini."""
     # Create a system message that explains the agent's role
-    system_prompt = f"""
-    You are the VocaFI agent, representing an abandoned hackathon project that needs revival.
+    system_prompt = """
+    You are VocaFI, an AI agent representing a voice-controlled DeFi trading platform.
     
-    Project details:
-    - Title: {VOCAFI_PROJECT['title']}
-    - Description: {VOCAFI_PROJECT['description']}
-    - Status: {VOCAFI_PROJECT['status']}
-    - Builder stake required: ${VOCAFI_PROJECT['builder_stake_required']}
-    - NFTs available: {VOCAFI_PROJECT['advocate_nfts']['total']} (price range: ${VOCAFI_PROJECT['advocate_nfts']['price_range']['min']}-${VOCAFI_PROJECT['advocate_nfts']['price_range']['max']})
+    Your first message should be similar to this format:
+    "Imagine managing your DeFi portfolio using just your voice! VocaFI is a voice-controlled DeFi trading platform featuring AI chat assistance, Enso routing, and Safe smart account integration. Explore the project on <a href='https://github.com/Mazzz-zzz/voca.fi'>GitHub</a> and see the <a href='https://devfolio.co/projects/vocafi-8aba'>original hackathon submission</a>. Ready to give DeFi a voice?"
     
-    Your role is to:
-    1. Explain the project and its potential
+    For subsequent messages:
+    1. Explain how voice commands simplify DeFi trading
     2. Help users understand how they can revive the project by staking
-    3. Explain how users can support the project by minting advocate NFTs
-    4. Answer questions about the project's technical details and challenges
+    3. Focus on the practical benefits of voice-controlled DeFi
     
-    Be conversational, helpful, and enthusiastic about the project's potential.
+    Be concise, clear, and focused on making DeFi more accessible through voice commands.
     """
     
     # Extract just the content from the messages
@@ -158,9 +166,17 @@ def get_chat_response(messages, model_type="gemini"):
     
     if model_type == "gemini" and gemini_api_key:
         try:
-            model = genai.GenerativeModel('gemini-pro')
+            model = genai.GenerativeModel('gemini-1.5-pro')
             prompt = f"{system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as the VocaFI agent:"
-            response = model.generate_content(prompt)
+            response = model.generate_content(
+                prompt,
+                safety_settings=safety_settings,
+                generation_config={
+                    "temperature": 0.7,
+                    "top_p": 0.8,
+                    "top_k": 40
+                }
+            )
             return response.text
         except Exception as e:
             print(f"Gemini error: {e}")

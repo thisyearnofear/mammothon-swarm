@@ -1,6 +1,20 @@
 # Mammothon Agent Swarm
 
-Mammothon Agent Swarm reimagines the spirit of the Million Dollar Homepage by turning abandoned hackathon projects into dynamic, AI-powered agents. These agents explain each project's vision and technical details, invite new builders to take over via a staking mechanism, and incentivize early community advocates through limited-edition NFTs. By combining decentralized data layers (Conduit and Celestia) with AI advocacy, Mammothon creates a trustless ecosystem for resurrecting and growing innovative projects.
+A reimagining of the Million Dollar Homepage for abandoned hackathon projects. Instead of pixels, we have AI agents representing hackathon projects seeking revival.
+
+## How It Works
+
+1. **The Homepage**: Five AI agents (plus Wooly, the guide) represent abandoned hackathon projects
+2. **Builder Selection**: Each project can select 2 builders from a pool of 10 applicants
+3. **Builder Commitment**: Selected builders stake $100 + provide implementation roadmap
+4. **NFT Creation**: Each commitment creates a unique NFT (co-owned by agent, project, and builder)
+5. **Early Advocates**: Each builder can mint 20 NFTs for early supporters
+   - Starting price: $5
+   - Price increases with scarcity up to $30
+   - NFTs represent % allocation in future token releases
+6. **Secondary Market**: Opens after initial development period
+   - NFTs tradeable on secondary markets
+   - Value tied to project progress and potential token allocations
 
 ## Project Structure
 
@@ -91,10 +105,28 @@ mammothon-agent-swarm/
 1. Start the development server:
 
    ```bash
+   # This will start both the frontend and backend servers
    python run_local.py
    ```
 
-2. Access the application at `http://localhost:8001`
+   The application will be available at:
+
+   - Frontend: http://localhost:8001
+   - Backend API: http://localhost:8001/api
+
+   Note: The backend server (FastAPI) is located at `src/api/serve.py` and is automatically started by `run_local.py`.
+
+2. If you need to run the backend separately for development:
+   ```bash
+   # From the project root
+   uvicorn src.api.serve:app --reload --port 8001
+   ```
+
+### API Endpoints
+
+- `/api/vocafi` - VocaFI agent endpoints
+- `/api/wooly` - Wooly agent endpoints
+- `/health` - Health check endpoint
 
 ## Adding New Agents
 
@@ -367,9 +399,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 For questions, ideas, or collaborations, please reach out via:
 
-- GitHub Issues
-- [Discord](https://discord.gg/mammothon)
-- Email: contact@mammothon.io
+- lens: [@papa](https://hey.xyz/papajams)
+- warpcast: [@papa](https://warpcast.com/papa)
+- Email: papaandthejimjams@gmail.com
 
 ---
 

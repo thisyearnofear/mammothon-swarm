@@ -8,11 +8,64 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Agent Button Base Styles */
-.agent-button {
+/* Subtle Mammoth-themed Backdrop */
+body::before {
+  content: "";
   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+      circle at 10% 20%,
+      rgba(216, 201, 184, 0.05) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 90% 80%,
+      rgba(189, 172, 152, 0.05) 0%,
+      transparent 40%
+    ),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25,30 Q15,45 10,55 L20,30 Z' fill='rgba(216, 201, 184, 0.03)' /%3E%3C/svg%3E");
+  background-size: 100% 100%, 100% 100%, 60px 60px;
+  animation: backdropShift 30s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes backdropShift {
+  0%,
+  100% {
+    background-position: 0% 0%, 0% 0%, 0px 0px;
+  }
+  50% {
+    background-position: 2% 2%, -2% -2%, 30px 30px;
+  }
+}
+
+/* Agent Layout Container */
+.agent-grid {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  margin: auto;
+}
+
+/* Center Wooly Agent */
+.wooly-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+/* Square Layout for Other Agents */
+.agent-button {
+  position: absolute;
   width: 80px;
   height: 80px;
   border-radius: 50%;
@@ -22,35 +75,136 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 1000;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease;
+  overflow: hidden;
 }
 
-.agent-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+/* Position for VocaFI - top */
+.vocafi-button {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Position for Clarity - right */
+.clarity-button {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+/* Position for Worldie - left */
+.hwc-button {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+/* Hover effects for all agents */
+.vocafi-button:hover {
+  transform: translateX(-50%) scale(1.08);
+}
+
+.wooly-button:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.clarity-button:hover {
+  transform: translateY(-50%) scale(1.08);
+}
+
+.hwc-button:hover {
+  transform: translateY(-50%) scale(1.08);
 }
 
 /* VocaFI Agent Styles */
 .vocafi-button {
-  bottom: 50%;
-  right: calc(50% + 50px);
-  transform: translate(50%, 50%);
   background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
 }
 
 /* Wooly Agent Styles */
 .wooly-button {
-  bottom: 50%;
-  right: calc(50% - 50px);
-  transform: translate(50%, 50%);
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
 }
 
+/* Mammoth Eye Animation */
 .agent-icon {
   width: 50px;
   height: 50px;
   fill: white;
+  position: relative;
+}
+
+.agent-icon g.eye {
+  transform-origin: center;
+  animation: blinkEyes 4s infinite;
+}
+
+@keyframes blinkEyes {
+  0%,
+  45%,
+  47%,
+  100% {
+    transform: scaleY(1);
+  }
+  46% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* Subtle Button Glow */
+.agent-button::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.agent-button:hover::before {
+  opacity: 1;
+  animation: glowPulse 3s infinite;
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.1;
+  }
+}
+
+/* Add subtle trunk wiggle on hover */
+.agent-button:hover .mammoth-body {
+  animation: trunkWiggle 1s infinite;
+  transform-origin: center 70%;
+}
+
+@keyframes trunkWiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(1deg);
+  }
+  75% {
+    transform: rotate(-1deg);
+  }
 }
 
 .agent-label {
@@ -61,12 +215,23 @@ body {
   text-transform: lowercase;
 }
 
+/* Chat Backdrop */
+.chat-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
 /* Chat Container Styles */
 .chat-container {
-  position: fixed;
-  bottom: 50%;
-  right: 50%;
-  transform: translate(50%, 50%);
+  position: relative;
   width: 380px;
   height: 500px;
   background-color: white;
@@ -75,24 +240,25 @@ body {
   display: none;
   flex-direction: column;
   overflow: hidden;
-  z-index: 999;
-  transition: all 0.3s ease;
+  z-index: 1001;
 }
 
 .chat-header {
+  color: white;
   padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: white;
 }
 
+/* VocaFI chat header */
 .vocafi-chat .chat-header {
   background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
 }
 
+/* Wooly chat header */
 .wooly-chat .chat-header {
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
 }
 
 .chat-header h5 {
@@ -123,7 +289,6 @@ body {
 }
 
 .send-button {
-  color: white;
   border: none;
   border-radius: 50%;
   width: 40px;
@@ -133,14 +298,17 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  color: white;
 }
 
+/* VocaFI send button */
 .vocafi-chat .send-button {
   background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
 }
 
+/* Wooly send button */
 .wooly-chat .send-button {
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
 }
 
 /* Message Styles */
@@ -150,6 +318,8 @@ body {
   border-radius: 15px;
   margin-bottom: 10px;
   word-wrap: break-word;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .user-message {
@@ -158,17 +328,18 @@ body {
   border-bottom-right-radius: 5px;
 }
 
-.assistant-message {
+/* VocaFI assistant message */
+.vocafi-chat .assistant-message {
+  background-color: #f3e5f5;
   align-self: flex-start;
   border-bottom-left-radius: 5px;
 }
 
-.vocafi-chat .assistant-message {
-  background-color: #f3e5f5;
-}
-
+/* Wooly assistant message */
 .wooly-chat .assistant-message {
   background-color: #e3f2fd;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
 }
 
 /* Typing Indicator */
@@ -181,29 +352,33 @@ body {
   margin-bottom: 10px;
 }
 
+/* VocaFI typing indicator */
 .vocafi-chat .typing-indicator {
   background-color: #f3e5f5;
 }
 
+/* Wooly typing indicator */
 .wooly-chat .typing-indicator {
   background-color: #e3f2fd;
 }
 
 .typing-indicator span {
-  height: 8px;
-  width: 8px;
+  height: 6px;
+  width: 6px;
   border-radius: 50%;
   display: inline-block;
   margin-right: 3px;
   animation: typing 1s infinite;
 }
 
+/* VocaFI typing dots */
 .vocafi-chat .typing-indicator span {
   background-color: #9d50bb;
 }
 
+/* Wooly typing dots */
 .wooly-chat .typing-indicator span {
-  background-color: #3498db;
+  background-color: #357abd;
 }
 
 .typing-indicator span:nth-child(2) {
@@ -275,4 +450,155 @@ body {
 
 .mammoth-pupil {
   fill: #333;
+}
+
+/* Clarity Agent Styles */
+.clarity-button {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+
+.clarity-button .mammoth-body {
+  fill: #27ae60;
+}
+
+/* Clarity chat header */
+.clarity-chat .chat-header {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+
+/* Clarity assistant message */
+.clarity-chat .assistant-message {
+  background-color: #e8f5e9;
+}
+
+/* Clarity typing indicator */
+.clarity-chat .typing-indicator {
+  background-color: #e8f5e9;
+}
+
+.clarity-chat .typing-indicator span {
+  background-color: #27ae60;
+}
+
+/* Mammoth Accessories */
+.mammoth-accessory {
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.agent-button:hover .mammoth-accessory {
+  opacity: 1;
+  animation: accessoryWiggle 2s infinite;
+}
+
+@keyframes accessoryWiggle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+/* Enhance eye animations */
+.agent-icon g.eye {
+  transform-origin: center;
+  animation: blinkEyes 4s infinite;
+}
+
+.vocafi-button g.eye {
+  animation-delay: 0.5s;
+}
+
+.clarity-button g.eye {
+  animation-delay: 1s;
+}
+
+/* Add subtle shine to glasses and monocle */
+.clarity-button .mammoth-accessory,
+.wooly-button circle.mammoth-accessory {
+  animation: glassesShine 4s infinite;
+}
+
+@keyframes glassesShine {
+  0%,
+  100% {
+    stroke: #f5f5f5;
+  }
+  50% {
+    stroke: #ffffff;
+  }
+}
+
+/* Hello World Computer Agent Styles */
+.hwc-button {
+  background: linear-gradient(135deg, #ff9f43 0%, #ff7f50 100%);
+}
+
+.hwc-button .mammoth-body {
+  fill: #ff9f43;
+}
+
+/* Hello World Computer chat header */
+.hwc-chat .chat-header {
+  background: linear-gradient(135deg, #ff9f43 0%, #ff7f50 100%);
+}
+
+/* Hello World Computer assistant message */
+.hwc-chat .assistant-message {
+  background-color: #fff3e0;
+}
+
+/* Hello World Computer typing indicator */
+.hwc-chat .typing-indicator {
+  background-color: #fff3e0;
+}
+
+.hwc-chat .typing-indicator span {
+  background-color: #ff7f50;
+}
+
+/* Enhance Hello World Computer's friendly appearance */
+.hwc-button .mammoth-accessory {
+  stroke-linecap: round;
+  animation: friendlyWiggle 3s ease-in-out infinite;
+}
+
+@keyframes friendlyWiggle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Stagger eye animations for all agents */
+.vocafi-button g.eye {
+  animation-delay: 0.5s;
+}
+
+.clarity-button g.eye {
+  animation-delay: 1s;
+}
+
+.hwc-button g.eye {
+  animation-delay: 1.5s;
+}
+
+/* Add subtle shine to accessories */
+.hwc-button .mammoth-accessory {
+  animation: accessoryGlow 3s infinite;
+}
+
+@keyframes accessoryGlow {
+  0%,
+  100% {
+    stroke: #f5f5f5;
+  }
+  50% {
+    stroke: #ffffff;
+  }
 }

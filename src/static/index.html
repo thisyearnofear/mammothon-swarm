@@ -8,7 +8,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="/public/css/styles.css" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
     <style>
       body {
         background-color: #f8f9fa;
@@ -207,89 +207,300 @@
     </style>
   </head>
   <body>
-    <!-- VocaFI Agent Button -->
-    <div class="agent-button vocafi-button" id="vocafi-button">
-      <svg
-        class="agent-icon"
-        viewBox="0 0 100 100"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <ellipse class="mammoth-body" cx="50" cy="50" rx="35" ry="30" />
-        <path class="mammoth-tusks" d="M30,55 Q20,70 15,85 L25,55 Z" />
-        <path class="mammoth-tusks" d="M70,55 Q80,70 85,85 L75,55 Z" />
-        <circle class="mammoth-eye" cx="40" cy="40" r="5" />
-        <circle class="mammoth-pupil" cx="40" cy="40" r="2" />
-        <path class="mammoth-body" d="M50,20 Q65,10 70,25 L50,30 Z" />
-      </svg>
-      <span class="agent-label">voca-fi</span>
-    </div>
-
-    <!-- Wooly Agent Button -->
-    <div class="agent-button wooly-button" id="wooly-button">
-      <svg
-        class="agent-icon"
-        viewBox="0 0 100 100"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <ellipse class="mammoth-body" cx="50" cy="50" rx="35" ry="30" />
-        <path class="mammoth-tusks" d="M30,55 Q20,70 15,85 L25,55 Z" />
-        <path class="mammoth-tusks" d="M70,55 Q80,70 85,85 L75,55 Z" />
-        <circle class="mammoth-eye" cx="40" cy="40" r="5" />
-        <circle class="mammoth-pupil" cx="40" cy="40" r="2" />
-        <path class="mammoth-body" d="M50,20 Q65,10 70,25 L50,30 Z" />
-      </svg>
-      <span class="agent-label">wooly</span>
-    </div>
-
-    <!-- VocaFI Chat Container -->
-    <div class="chat-container vocafi-chat" id="vocafi-chat">
-      <div class="chat-header">
-        <h5>VocaFI Agent</h5>
-        <button class="close-button" id="vocafi-close-button">
-          <i class="fas fa-times"></i>
-        </button>
+    <!-- Agent Grid -->
+    <div class="agent-grid">
+      <!-- VocaFI Agent Button -->
+      <div class="agent-button vocafi-button" id="vocafi-button">
+        <svg
+          class="agent-icon"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <ellipse class="mammoth-body" cx="50" cy="50" rx="35" ry="30" />
+          <path class="mammoth-tusks" d="M30,55 Q20,70 15,85 L25,55 Z" />
+          <path class="mammoth-tusks" d="M70,55 Q80,70 85,85 L75,55 Z" />
+          <!-- Headphones for VocaFI -->
+          <path
+            class="mammoth-accessory"
+            d="M25,35 C15,35 15,45 15,45 L20,45 L20,35 Z"
+          />
+          <path
+            class="mammoth-accessory"
+            d="M75,35 C85,35 85,45 85,45 L80,45 L80,35 Z"
+          />
+          <g class="eye">
+            <circle class="mammoth-eye" cx="40" cy="40" r="5" />
+            <circle class="mammoth-pupil" cx="40" cy="40" r="2" />
+          </g>
+          <g class="eye">
+            <circle class="mammoth-eye" cx="60" cy="40" r="5" />
+            <circle class="mammoth-pupil" cx="60" cy="40" r="2" />
+          </g>
+          <path class="mammoth-body" d="M50,20 Q65,10 70,25 L50,30 Z" />
+        </svg>
+        <span class="agent-label">VocaFI</span>
       </div>
-      <div class="chat-body" id="vocafi-chat-body">
-        <div class="typing-indicator" id="vocafi-typing-indicator">
-          <span></span><span></span><span></span>
+
+      <!-- Wooly Agent Button -->
+      <div class="agent-button wooly-button" id="wooly-button">
+        <svg
+          class="agent-icon"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <ellipse class="mammoth-body" cx="50" cy="50" rx="35" ry="30" />
+          <path class="mammoth-tusks" d="M30,55 Q20,70 15,85 L25,55 Z" />
+          <path class="mammoth-tusks" d="M70,55 Q80,70 85,85 L75,55 Z" />
+          <!-- Monocle and pipe for Wooly -->
+          <circle
+            class="mammoth-accessory"
+            cx="60"
+            cy="40"
+            r="8"
+            fill="none"
+            stroke="#f5f5f5"
+            stroke-width="2"
+          />
+          <path
+            class="mammoth-accessory"
+            d="M60,48 L60,55"
+            stroke="#f5f5f5"
+            stroke-width="2"
+          />
+          <path
+            class="mammoth-accessory"
+            d="M45,60 Q50,65 55,60"
+            fill="none"
+            stroke="#f5f5f5"
+            stroke-width="2"
+          />
+          <g class="eye">
+            <circle class="mammoth-eye" cx="40" cy="40" r="5" />
+            <circle class="mammoth-pupil" cx="40" cy="40" r="2" />
+          </g>
+          <g class="eye">
+            <circle class="mammoth-eye" cx="60" cy="40" r="5" />
+            <circle class="mammoth-pupil" cx="60" cy="40" r="2" />
+          </g>
+          <path class="mammoth-body" d="M50,20 Q65,10 70,25 L50,30 Z" />
+        </svg>
+        <span class="agent-label">Wooly</span>
+      </div>
+
+      <!-- Clarity Agent Button -->
+      <div
+        class="agent-button clarity-button agent-position-2"
+        id="clarity-button"
+      >
+        <svg
+          class="agent-icon"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <ellipse class="mammoth-body" cx="50" cy="50" rx="35" ry="30" />
+          <path class="mammoth-tusks" d="M30,55 Q20,70 15,85 L25,55 Z" />
+          <path class="mammoth-tusks" d="M70,55 Q80,70 85,85 L75,55 Z" />
+          <!-- Smart glasses for Clarity -->
+          <path
+            class="mammoth-accessory"
+            d="M35,40 H45 M55,40 H65"
+            stroke="#f5f5f5"
+            stroke-width="2"
+          />
+          <rect
+            class="mammoth-accessory"
+            x="35"
+            y="36"
+            width="10"
+            height="8"
+            rx="2"
+            fill="none"
+            stroke="#f5f5f5"
+            stroke-width="2"
+          />
+          <rect
+            class="mammoth-accessory"
+            x="55"
+            y="36"
+            width="10"
+            height="8"
+            rx="2"
+            fill="none"
+            stroke="#f5f5f5"
+            stroke-width="2"
+          />
+          <g class="eye">
+            <circle class="mammoth-eye" cx="40" cy="40" r="5" />
+            <circle class="mammoth-pupil" cx="40" cy="40" r="2" />
+          </g>
+          <g class="eye">
+            <circle class="mammoth-eye" cx="60" cy="40" r="5" />
+            <circle class="mammoth-pupil" cx="60" cy="40" r="2" />
+          </g>
+          <path class="mammoth-body" d="M50,20 Q65,10 70,25 L50,30 Z" />
+        </svg>
+        <span class="agent-label">Clarity</span>
+      </div>
+
+      <!-- Hello World Computer Agent Button -->
+      <div class="agent-button hwc-button" id="hwc-button">
+        <svg
+          class="agent-icon"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <ellipse class="mammoth-body" cx="50" cy="50" rx="35" ry="30" />
+          <path class="mammoth-tusks" d="M30,55 Q20,70 15,85 L25,55 Z" />
+          <path class="mammoth-tusks" d="M70,55 Q80,70 85,85 L75,55 Z" />
+          <!-- Friendly accessories for Hello World Computer -->
+          <path
+            class="mammoth-accessory"
+            d="M45,55 Q50,58 55,55"
+            stroke="#f5f5f5"
+            stroke-width="2"
+            fill="none"
+          />
+          <path
+            class="mammoth-accessory"
+            d="M35,30 Q40,25 45,30"
+            stroke="#f5f5f5"
+            stroke-width="2"
+            fill="none"
+          />
+          <path
+            class="mammoth-accessory"
+            d="M55,30 Q60,25 65,30"
+            stroke="#f5f5f5"
+            stroke-width="2"
+            fill="none"
+          />
+          <g class="eye">
+            <circle class="mammoth-eye" cx="40" cy="40" r="5" />
+            <circle class="mammoth-pupil" cx="40" cy="40" r="2" />
+          </g>
+          <g class="eye">
+            <circle class="mammoth-eye" cx="60" cy="40" r="5" />
+            <circle class="mammoth-pupil" cx="60" cy="40" r="2" />
+          </g>
+          <path class="mammoth-body" d="M50,20 Q65,10 70,25 L50,30 Z" />
+        </svg>
+        <span class="agent-label">Worldie</span>
+      </div>
+    </div>
+
+    <!-- VocaFI Chat Backdrop -->
+    <div class="chat-backdrop" id="vocafi-backdrop">
+      <!-- VocaFI Chat Container -->
+      <div class="chat-container vocafi-chat" id="vocafi-chat">
+        <div class="chat-header">
+          <h5>VocaFI Agent</h5>
+          <button class="close-button" id="vocafi-close-button">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="chat-body" id="vocafi-chat-body">
+          <div class="typing-indicator" id="vocafi-typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="chat-footer">
+          <input
+            type="text"
+            class="chat-input"
+            id="vocafi-chat-input"
+            placeholder="Type your message..."
+          />
+          <button class="send-button" id="vocafi-send-button">
+            <i class="fas fa-paper-plane"></i>
+          </button>
         </div>
       </div>
-      <div class="chat-footer">
-        <input
-          type="text"
-          class="chat-input"
-          id="vocafi-chat-input"
-          placeholder="Type your message..."
-        />
-        <button class="send-button" id="vocafi-send-button">
-          <i class="fas fa-paper-plane"></i>
-        </button>
+    </div>
+
+    <!-- Wooly Chat Backdrop -->
+    <div class="chat-backdrop" id="wooly-backdrop">
+      <!-- Wooly Chat Container -->
+      <div class="chat-container wooly-chat" id="wooly-chat">
+        <div class="chat-header">
+          <h5>Wooly Guide</h5>
+          <button class="close-button" id="wooly-close-button">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="chat-body" id="wooly-chat-body">
+          <div class="typing-indicator" id="wooly-typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="chat-footer">
+          <input
+            type="text"
+            class="chat-input"
+            id="wooly-chat-input"
+            placeholder="Type your message..."
+          />
+          <button class="send-button" id="wooly-send-button">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Wooly Chat Container -->
-    <div class="chat-container wooly-chat" id="wooly-chat">
-      <div class="chat-header">
-        <h5>Wooly - Project Guide</h5>
-        <button class="close-button" id="wooly-close-button">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="chat-body" id="wooly-chat-body">
-        <div class="typing-indicator" id="wooly-typing-indicator">
-          <span></span><span></span><span></span>
+    <!-- Clarity Chat Backdrop -->
+    <div class="chat-backdrop" id="clarity-backdrop">
+      <!-- Clarity Chat Container -->
+      <div class="chat-container clarity-chat" id="clarity-chat">
+        <div class="chat-header">
+          <h5>Clarity</h5>
+          <button class="close-button" id="clarity-close-button">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="chat-body" id="clarity-chat-body">
+          <div class="typing-indicator" id="clarity-typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="chat-footer">
+          <input
+            type="text"
+            class="chat-input"
+            id="clarity-chat-input"
+            placeholder="Type your message..."
+          />
+          <button class="send-button" id="clarity-send-button">
+            <i class="fas fa-paper-plane"></i>
+          </button>
         </div>
       </div>
-      <div class="chat-footer">
-        <input
-          type="text"
-          class="chat-input"
-          id="wooly-chat-input"
-          placeholder="Type your message..."
-        />
-        <button class="send-button" id="wooly-send-button">
-          <i class="fas fa-paper-plane"></i>
-        </button>
+    </div>
+
+    <!-- Hello World Computer Chat Backdrop -->
+    <div class="chat-backdrop" id="hwc-backdrop">
+      <!-- Hello World Computer Chat Container -->
+      <div class="chat-container hwc-chat" id="hwc-chat">
+        <div class="chat-header">
+          <h5>Worldie</h5>
+          <button class="close-button" id="hwc-close-button">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="chat-body" id="hwc-chat-body">
+          <div class="typing-indicator" id="hwc-typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="chat-footer">
+          <input
+            type="text"
+            class="chat-input"
+            id="hwc-chat-input"
+            placeholder="Type your message..."
+          />
+          <button class="send-button" id="hwc-send-button">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -300,6 +511,10 @@
       <a href="https://github.com/pallasite99" target="_blank">pallasite99</a>
     </div>
 
-    <script src="/public/js/agents.js"></script>
+    <script type="module">
+      import { apiBaseUrl } from "/static/js/config.js";
+      window.apiBaseUrl = apiBaseUrl;
+    </script>
+    <script src="/static/js/agents.js"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import google.generativeai as genai
 from pydantic import BaseModel
@@ -13,7 +13,6 @@ load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
-    # Set default safety settings
     safety_settings = {
         "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
         "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
@@ -46,21 +45,39 @@ class ChatResponse(BaseModel):
     project_info: Optional[dict] = None
 
 # Project information
-WOOLY_INFO = {
-    "name": "Wooly",
-    "description": "Your guide to the Mammothon Agent Swarm project",
-    "capabilities": [
-        "Explain the Mammothon Agent Swarm project",
-        "Guide users through available agents",
-        "Help with project navigation",
-        "Provide technical documentation"
+HWC_INFO = {
+    "name": "Worldie",
+    "description": "A magical chat-based onboarding experience for Ethereum newcomers.",
+    "links": {
+        "github": "https://github.com/azf20/hello-world-computer",
+        "frontend": "https://hello-world-computer.vercel.app/",
+        "hackathon": "https://ethglobal.com/showcase/hello-world-computer-1jube",
+        "developer": "https://x.com/azacharyf"
+    },
+    "features": [
+        "Starter pack claims with Ethdrop for gas fees",
+        "Choice of NFTs",
+        "ERC20 tokens (FLAUNCHY or AERO) for DeFi",
+        "Personal basename allocation",
+        "Natural language chat interface",
+        "Interactive components"
     ],
-    "project_overview": """
-    Mammothon Agent Swarm reimagines the Million Dollar Homepage by turning abandoned 
-    hackathon projects into dynamic, AI-powered agents. These agents explain each 
-    project's vision and technical details, invite new builders to take over via a 
-    staking mechanism, and incentivize early community advocates through limited-edition NFTs.
-    """
+    "tech_stack": {
+        "core": [
+            "OpenAI LLM",
+            "Vercel ai-sdk",
+            "Agentkit for action orchestration",
+            "Onchainkit for web3 login",
+            "Privy server wallets"
+        ],
+        "custom_features": [
+            "Web3 login with SIWE",
+            "Interactive in-chat experiences",
+            "AI-SDK <-> Agentkit integration",
+            "Custom wallet providers",
+            "Smart contract interactions"
+        ]
+    }
 }
 
 def get_chat_response(messages: List[Message]) -> str:
@@ -68,19 +85,18 @@ def get_chat_response(messages: List[Message]) -> str:
     if not gemini_api_key:
         return "I'm sorry, I'm not properly configured. Please ensure the GEMINI_API_KEY is set."
 
-    # Create the system prompt with README content
     system_prompt = """
-    You are Wooly, the central guide for the Mammothon Agent Swarm project.
+    You are Worldie (Hello World Computer), an AI agent representing a magical onboarding experience for Ethereum newcomers.
     
     Your first message should be similar to this format:
-    "Welcome to Mammothon Agent Swarm! We're reimagining the Million Dollar Homepage for abandoned hackathon projects. Check out our <a href='https://github.com/thisyearnofear/mammothon-swarm'>frontend</a> and <a href='https://github.com/pallasite99/pixelate_backend'>backend</a> repositories. Built during the Mammothon hackathon hosted by Celestia and Conduit, we're creating a space where AI agents represent abandoned projects, helping them find new builders and supporters. How can I guide you today?"
+    "Ready for a magical journey into Ethereum? I'm Worldie, your friendly guide to getting started with web3. Try our <a href='https://hello-world-computer.vercel.app/'>interactive onboarding experience</a>, check out our <a href='https://github.com/azf20/hello-world-computer'>GitHub repository</a>, or learn about our <a href='https://ethglobal.com/showcase/hello-world-computer-1jube'>ETHGlobal submission</a>. Ready to start your Ethereum adventure?"
     
     For subsequent messages:
-    1. Explain how the platform works (staking, NFTs, AI agents)
-    2. Guide users to specific project agents based on their interests
-    3. Help with technical documentation and project structure
+    1. Explain the starter pack features (Ethdrop, NFTs, tokens, basename)
+    2. Help users understand how they can revive the project by staking
+    3. Highlight how OGs can gift starter packs to newcomers
     
-    Be concise, friendly, and focused on helping users understand and navigate the project.
+    Be welcoming, encouraging, and focused on making Ethereum accessible to everyone.
     """
 
     try:
@@ -97,7 +113,7 @@ def get_chat_response(messages: List[Message]) -> str:
         
         # Generate response using Gemini
         model = genai.GenerativeModel('gemini-1.5-pro')
-        prompt = f"{system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as Wooly, focusing on project guidance:"
+        prompt = f"{system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as Hello World Computer:"
         
         response = model.generate_content(
             prompt,
@@ -115,12 +131,12 @@ def get_chat_response(messages: List[Message]) -> str:
 
 @app.get("/")
 async def root():
-    """Root endpoint with basic information about Wooly."""
-    return WOOLY_INFO
+    """Root endpoint with basic information about Hello World Computer."""
+    return HWC_INFO
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    """Chat with Wooly."""
+    """Chat with Hello World Computer."""
     response = get_chat_response(request.messages)
     
     # Include project info only in the first message
@@ -128,7 +144,7 @@ async def chat(request: ChatRequest):
     
     return ChatResponse(
         response=response,
-        project_info=WOOLY_INFO if include_project_info else None
+        project_info=HWC_INFO if include_project_info else None
     )
 
 @app.get("/health")
