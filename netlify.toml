@@ -1,11 +1,18 @@
 [build]
   base = "src"
-  publish = "static"
+  publish = "public"
   command = """
-    echo 'Preparing static files for deployment...' &&
+    echo 'Installing dependencies...' &&
+    npm install &&
+    echo 'Building JavaScript...' &&
+    npm run build &&
+    echo 'Copying static files...' &&
     mkdir -p public &&
-    cp -r static/* public/ &&
-    echo 'Static files ready for deployment'
+    cp -r static/index.html public/ &&
+    cp -r static/css public/ &&
+    cp -r static/images public/ &&
+    cp -r static/components public/ &&
+    echo 'Build complete!'
   """
 
 [[redirects]]

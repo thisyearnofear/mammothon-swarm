@@ -1,0 +1,11 @@
+{
+    "name": "mammothon-frontend",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "esbuild static/js/*.js --bundle --minify --outdir=public/js --target=es2018"
+    },
+    "devDependencies": {
+        "esbuild": "^0.20.1"
+    }
+}

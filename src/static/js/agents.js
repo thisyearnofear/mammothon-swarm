@@ -1,3 +1,5 @@
+import { apiBaseUrl } from "./config.js";
+
 class Agent {
   constructor(config) {
     this.id = config.id;
