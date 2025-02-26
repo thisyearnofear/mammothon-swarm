@@ -1,7 +1,11 @@
 [build]
-  base = "src/static"
-  publish = "."
-  command = "echo 'Static files ready for deployment'"
+  base = "src"
+  publish = "static"
+  command = """
+    echo 'Preparing static files for deployment...' &&
+    cp -r static/* public/ &&
+    echo 'Static files ready for deployment'
+  """
 
 [[redirects]]
   from = "/*"
@@ -18,4 +22,14 @@
     Access-Control-Allow-Origin = "*"
     Cache-Control = "public, max-age=0, must-revalidate"
     X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff" 
+    X-Content-Type-Options = "nosniff"
+    
+[[headers]]
+  for = "/*.js"
+    [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/*.css"
+    [headers.values]
+    Content-Type = "text/css" 
