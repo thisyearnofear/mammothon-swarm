@@ -3,7 +3,7 @@ const config = {
     apiBaseUrl: "http://localhost:8001/api",
   },
   production: {
-    apiBaseUrl: "https://mammothon-api.onrender.com/api", // You'll need to update this with your actual API URL
+    apiBaseUrl: "https://kind-gwenora-papajams-0ddff9e5.koyeb.app/api",
   },
 };
 
