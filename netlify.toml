@@ -1,7 +1,7 @@
 [build]
   base = "frontend"
-  publish = ".next"
   command = "npm run build"
+  publish = ".next"
 
 # Redirects and headers are CRITICAL for SPAs to work correctly
 [[redirects]]
@@ -11,18 +11,16 @@
   force = true
 
 [[redirects]]
-  from = "/_next/*"
-  to = "/_next/:splat"
-  status = 200
-
-[[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/.netlify/functions/nextjs-server"
   status = 200
-  force = false
 
 [build.environment]
+  NEXT_TELEMETRY_DISABLED = "1"
   NODE_VERSION = "18"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [[headers]]
   for = "/*"

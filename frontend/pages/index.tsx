@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
+import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { Agent } from "../lib/agents";
 import { apiBaseUrl } from "../lib/config";
@@ -168,10 +169,12 @@ export default function Home() {
                       className={styles.agentButton}
                       onClick={() => selectAgent(id)}
                     >
-                      <img
+                      <Image
                         src={agent.avatar}
                         alt={agent.name}
                         className={styles.agentAvatar}
+                        width={150}
+                        height={150}
                       />
                     </button>
                     <span className={styles.agentLabel}>{agent.label}</span>
@@ -184,10 +187,12 @@ export default function Home() {
                   <button onClick={handleBack} className={styles.backButton}>
                     ← Back
                   </button>
-                  <img
+                  <Image
                     src={agentList[selectedAgent].avatar}
                     alt={agentList[selectedAgent].name}
                     className={styles.chatAvatar}
+                    width={40}
+                    height={40}
                   />
                   <h2>{agentList[selectedAgent].name}</h2>
                 </div>
