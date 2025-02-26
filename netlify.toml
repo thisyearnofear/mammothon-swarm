@@ -3,6 +3,7 @@
   publish = "static"
   command = """
     echo 'Preparing static files for deployment...' &&
+    mkdir -p public &&
     cp -r static/* public/ &&
     echo 'Static files ready for deployment'
   """
