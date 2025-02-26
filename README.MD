@@ -2,6 +2,165 @@
 
 Mammothon Agent Swarm reimagines the spirit of the Million Dollar Homepage by turning abandoned hackathon projects into dynamic, AI-powered agents. These agents explain each project's vision and technical details, invite new builders to take over via a staking mechanism, and incentivize early community advocates through limited-edition NFTs. By combining decentralized data layers (Conduit and Celestia) with AI advocacy, Mammothon creates a trustless ecosystem for resurrecting and growing innovative projects.
 
+## Project Structure
+
+```
+mammothon-agent-swarm/
+├── src/
+│   ├── agents/                 # Individual agent implementations
+│   │   ├── vocafi_agent.py    # VocaFI project agent
+│   │   └── wooly_agent.py     # Project guide agent
+│   ├── api/                    # API and server implementations
+│   │   └── serve.py           # Main FastAPI server
+│   └── static/                # Frontend assets
+│       ├── css/
+│       │   └── styles.css     # Global styles
+│       ├── js/
+│       │   └── agents.js      # Agent interaction logic
+│       ├── components/        # Reusable UI components
+│       └── index.html         # Main application page
+├── tests/                     # Test files
+├── docs/                      # Documentation
+├── .env                      # Environment variables
+├── .gitignore
+├── requirements.txt          # Python dependencies
+└── run_local.py             # Local development server
+```
+
+## Current Implementation
+
+### Agents
+
+1. **VocaFI Agent**
+
+   - Voice-controlled DeFi trading project
+   - AI-powered chat assistance
+   - Staking and NFT minting information
+
+2. **Wooly Agent**
+   - Project guide and information hub
+   - Explains platform features and architecture
+   - Directs users to specific project agents
+
+### Frontend
+
+- Modular agent system with dynamic loading
+- Responsive chat interface
+- Customizable agent appearances
+- Scalable CSS and JavaScript architecture
+
+### Backend
+
+- FastAPI-based server
+- Gemini AI integration
+- Modular agent routing
+- Static file serving
+
+## Development
+
+### Prerequisites
+
+- Python 3.8+
+- Node.js (for frontend development)
+- Gemini API key
+
+### Environment Setup
+
+1. Create a virtual environment:
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Set up environment variables in `.env`:
+   ```
+   GEMINI_API_KEY=your_gemini_api_key
+   SWARMNODE_API_KEY=your_swarmnode_key
+   OPENAI_API_KEY=your_openai_key
+   ```
+
+### Running the Application
+
+1. Start the development server:
+
+   ```bash
+   python run_local.py
+   ```
+
+2. Access the application at `http://localhost:8001`
+
+## Adding New Agents
+
+1. Create a new agent file in `src/agents/`:
+
+   ```python
+   # example_agent.py
+   from fastapi import FastAPI
+   # ... agent implementation
+   ```
+
+2. Add agent configuration in `src/static/js/agents.js`:
+
+   ```javascript
+   const agentConfigs = [
+     // ... existing agents
+     {
+       id: "example",
+       name: "Example",
+       type: "example",
+       description: "Example agent description",
+     },
+   ];
+   ```
+
+3. Mount the agent in `src/api/serve.py`:
+   ```python
+   from agents.example_agent import app as example_app
+   app.mount("/api/example", example_app)
+   ```
+
+## Future Development
+
+### Phase 1: SwarmNode Integration (Current)
+
+- [ ] Migrate agents to SwarmNode
+- [ ] Implement persistent storage
+- [ ] Add agent scheduling
+
+### Phase 2: Decentralization
+
+- [ ] Integrate Conduit for data indexing
+- [ ] Add Celestia for data storage
+- [ ] Implement NFT minting
+
+### Phase 3: Scaling
+
+- [ ] Add more project agents
+- [ ] Implement agent discovery
+- [ ] Enhanced UI/UX
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+## License
+
+MIT License
+
+## Contact
+
+- Warpcast: [@papa](https://warpcast.com/papa)
+- GitHub: [@pallasite99](https://github.com/pallasite99)
+
 ---
 
 ## Table of Contents
@@ -41,7 +200,7 @@ By integrating decentralized backends like Conduit and Celestia, the platform gu
   Inspired by the pixelated, revenue-generating homepage, Mammothon allocates "pixels" to hackathon projects in the form of AI agents, each vying for attention and revival.
 
 - **AI Advocacy:**  
-  Each agent is powered by AI (using LangChain and OpenAI) to deliver natural language explanations of its project’s vision, technical details, and future potential.
+  Each agent is powered by AI (using LangChain and OpenAI) to deliver natural language explanations of its project's vision, technical details, and future potential.
 
 - **Builder Commitment via NFTs:**  
   Builders submit their plans and stake funds to take on a project. Their commitment is recorded by minting a unique NFT. Early advocates can also mint NFTs (priced from $5 up to $30) that later convert to a share in a future token allocation.
@@ -175,10 +334,15 @@ VocaFI is the first hackathon project being revived under Mammothon. Originally 
    ```
 
 5. **Run the VocaFI Agent Locally**
-   ```bash
-   uvicorn vocafi_agent:app --reload
-   ```
-   Visit [http://127.0.0.1:8000/vocafi](http://127.0.0.1:8000/vocafi) to view the agent in action.
+
+Frontend: python run_local.py
+Backend: python serve.py
+
+```bash
+uvicorn vocafi_agent:app --reload
+```
+
+Visit [http://127.0.0.1:8000/vocafi](http://127.0.0.1:8000/vocafi) to view the agent in action.
 
 ---
 

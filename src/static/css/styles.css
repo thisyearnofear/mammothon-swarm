@@ -1,0 +1,278 @@
+/* Global Styles */
+body {
+  background-color: #f8f9fa;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Agent Button Base Styles */
+.agent-button {
+  position: fixed;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.agent-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* VocaFI Agent Styles */
+.vocafi-button {
+  bottom: 50%;
+  right: calc(50% + 50px);
+  transform: translate(50%, 50%);
+  background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+}
+
+/* Wooly Agent Styles */
+.wooly-button {
+  bottom: 50%;
+  right: calc(50% - 50px);
+  transform: translate(50%, 50%);
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+}
+
+.agent-icon {
+  width: 50px;
+  height: 50px;
+  fill: white;
+}
+
+.agent-label {
+  color: white;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+  text-transform: lowercase;
+}
+
+/* Chat Container Styles */
+.chat-container {
+  position: fixed;
+  bottom: 50%;
+  right: 50%;
+  transform: translate(50%, 50%);
+  width: 380px;
+  height: 500px;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 999;
+  transition: all 0.3s ease;
+}
+
+.chat-header {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.vocafi-chat .chat-header {
+  background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+}
+
+.wooly-chat .chat-header {
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+}
+
+.chat-header h5 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.chat-body {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-footer {
+  padding: 10px 15px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+}
+
+.chat-input {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  padding: 8px 15px;
+  outline: none;
+}
+
+.send-button {
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin-left: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.vocafi-chat .send-button {
+  background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+}
+
+.wooly-chat .send-button {
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+}
+
+/* Message Styles */
+.message {
+  max-width: 80%;
+  padding: 10px 15px;
+  border-radius: 15px;
+  margin-bottom: 10px;
+  word-wrap: break-word;
+}
+
+.user-message {
+  background-color: #e9ecef;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+
+.assistant-message {
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+}
+
+.vocafi-chat .assistant-message {
+  background-color: #f3e5f5;
+}
+
+.wooly-chat .assistant-message {
+  background-color: #e3f2fd;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: none;
+  align-self: flex-start;
+  padding: 10px 15px;
+  border-radius: 15px;
+  border-bottom-left-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.vocafi-chat .typing-indicator {
+  background-color: #f3e5f5;
+}
+
+.wooly-chat .typing-indicator {
+  background-color: #e3f2fd;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 3px;
+  animation: typing 1s infinite;
+}
+
+.vocafi-chat .typing-indicator span {
+  background-color: #9d50bb;
+}
+
+.wooly-chat .typing-indicator span {
+  background-color: #3498db;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+  margin-right: 0;
+}
+
+@keyframes typing {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+/* Footer Styles */
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.9em;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.footer a {
+  color: #6e48aa;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.footer a:hover {
+  opacity: 0.8;
+}
+
+/* Mammoth SVG Styling */
+.mammoth-tusks {
+  fill: #f5f5f5;
+}
+
+.vocafi-button .mammoth-body {
+  fill: #8a5fb9;
+}
+
+.wooly-button .mammoth-body {
+  fill: #3498db;
+}
+
+.mammoth-eye {
+  fill: white;
+}
+
+.mammoth-pupil {
+  fill: #333;
+}
