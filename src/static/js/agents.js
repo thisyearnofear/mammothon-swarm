@@ -1,4 +1,4 @@
-import { apiBaseUrl } from "./config.js";
+import { apiBaseUrl } from "/js/config.js";
 
 // Add debugging
 console.log("Agents.js loaded");
@@ -191,5 +191,8 @@ const agentConfigs = [
 
 // Initialize agents when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM loaded, initializing agents");
   const agents = agentConfigs.map((config) => new Agent(config));
+  window.agentsInitialized = true;
+  console.log("Agents initialized successfully");
 });

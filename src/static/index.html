@@ -521,6 +521,52 @@
     </script>
 
     <!-- Load the bundled JavaScript -->
-    <script type="module" src="js/agents.js"></script>
+    <script type="module" src="/js/agents.js"></script>
+
+    <!-- Fallback script in case module loading fails -->
+    <script>
+      // Check if agents were initialized after a short delay
+      setTimeout(function () {
+        if (typeof window.agentsInitialized === "undefined") {
+          console.log("Module loading failed, using fallback");
+
+          // Define a simple API base URL
+          const apiBaseUrl =
+            window.location.hostname === "localhost"
+              ? "http://localhost:8001/api"
+              : "https://kind-gwenora-papajams-0ddff9e5.koyeb.app/api";
+
+          // Basic agent setup
+          document.querySelectorAll(".agent-button").forEach((button) => {
+            button.addEventListener("click", function () {
+              const id = this.id.split("-")[0];
+              const backdrop = document.getElementById(`${id}-backdrop`);
+              const chatContainer = document.getElementById(`${id}-chat`);
+
+              if (backdrop && chatContainer) {
+                backdrop.style.display = "flex";
+                chatContainer.style.display = "flex";
+              }
+            });
+          });
+
+          // Setup close buttons
+          document
+            .querySelectorAll('[id$="-close-button"]')
+            .forEach((button) => {
+              button.addEventListener("click", function () {
+                const id = this.id.split("-")[0];
+                const backdrop = document.getElementById(`${id}-backdrop`);
+                const chatContainer = document.getElementById(`${id}-chat`);
+
+                if (backdrop && chatContainer) {
+                  backdrop.style.display = "none";
+                  chatContainer.style.display = "none";
+                }
+              });
+            });
+        }
+      }, 1000);
+    </script>
   </body>
 </html>
