@@ -8,10 +8,10 @@
     npm run build &&
     echo 'Copying static files...' &&
     mkdir -p public &&
-    cp -r static/index.html public/ &&
-    cp -r static/css public/ &&
-    cp -r static/images public/ &&
-    cp -r static/components public/ &&
+    cp static/index.html public/ &&
+    if [ -d "static/css" ]; then cp -r static/css public/; fi &&
+    if [ -d "static/images" ]; then cp -r static/images public/; fi &&
+    if [ -d "static/components" ]; then cp -r static/components public/; fi &&
     echo 'Build complete!'
   """
 
