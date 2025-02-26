@@ -29,9 +29,8 @@ app.mount("/api/wooly", wooly_app)
 app.mount("/api/clarity", clarity_app)
 app.mount("/api/hwc", hwc_app)
 
-# Serve static files and images
-app.mount("/images", StaticFiles(directory="public/images"), name="images")
-app.mount("/static", StaticFiles(directory="src/static", html=True), name="static")
+# Serve all static files (including images) from src/static
+app.mount("/", StaticFiles(directory="src/static", html=True), name="static")
 
 # Serve the index.html file
 @app.get("/", response_class=HTMLResponse)
