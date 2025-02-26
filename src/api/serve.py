@@ -29,15 +29,16 @@ app.mount("/api/wooly", wooly_app)
 app.mount("/api/clarity", clarity_app)
 app.mount("/api/hwc", hwc_app)
 
-# Serve static files
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
+# Serve static files and images
+app.mount("/images", StaticFiles(directory="public/images"), name="images")
+app.mount("/static", StaticFiles(directory="src/static", html=True), name="static")
 
 # Serve the index.html file
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
     """Serve the main HTML file."""
     try:
-        with open("src/static/index.html", "r") as f:
+        with open("src/static/index.html", "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="index.html not found")
