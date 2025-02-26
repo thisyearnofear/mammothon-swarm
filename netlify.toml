@@ -1,6 +1,6 @@
 [build]
   publish = "src/static"
-  command = ""
+  command = "echo 'No build command needed for static files'"
 
 [[redirects]]
   from = "/*"
@@ -13,4 +13,5 @@
 [[headers]]
   for = "/*"
     [headers.values]
-    Access-Control-Allow-Origin = "*" 
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=0, must-revalidate" 
