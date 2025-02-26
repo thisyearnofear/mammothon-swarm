@@ -77,6 +77,13 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+# Next.js
+.next/
+out/
+.vercel
+.turbo
+next-env.d.ts
+
 # Project specific
 *.log
 .coverage

@@ -1,0 +1,12 @@
+# Build output
+.next/
+out/
+build/
+dist/
+
+# Node modules
+node_modules/
+
+# Utility scripts
+copy-assets.js
+test-migration.js 

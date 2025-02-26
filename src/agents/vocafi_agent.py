@@ -1,51 +1,17 @@
 import os
-import swarmnode
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
-import google.generativeai as genai
 from pydantic import BaseModel
 from typing import List, Optional
 
-# Load environment variables
-load_dotenv()
-
-# Load API keys from environment variables
-swarmnode.api_key = os.getenv("SWARMNODE_API_KEY")
-openai_api_key = os.getenv("OPENAI_API_KEY")
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-
-# Configure Gemini
-if gemini_api_key:
-    genai.configure(api_key=gemini_api_key)
-    # Set default safety settings
-    safety_settings = {
-        "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
-        "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
-        "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
-        "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
-    }
-
-# Initialize FastAPI app
-app = FastAPI(title="Mammothon Agent Swarm", 
-              description="AI-powered agents representing hackathon projects")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # For development; restrict in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from src.agents.base_agent import BaseAgent, Message, ChatRequest, ChatResponse
 
 # Define VocaFI project details
 VOCAFI_PROJECT = {
     "title": "VocaFI",
     "description": "Voice-controlled DeFi trading with AI-powered chat assistance, Enso routing, and Safe smart account integration.",
     "github_repo": "https://github.com/Mazzz-zzz/voca.fi",
+    "project_url": "https://voca.fi",
     "hackathon": "SAFE Agentathon",
     "hackathon_link": "https://devfolio.co/projects/vocafi-8aba",
     "problems_solved": [
@@ -67,168 +33,69 @@ VOCAFI_PROJECT = {
     }
 }
 
-# Define message models for chat
-class Message(BaseModel):
-    role: str  # 'user' or 'assistant'
-    content: str
+class VocaFIAgent(BaseAgent):
+    """VocaFI agent implementation."""
+    
+    def __init__(self):
+        """Initialize the VocaFI agent."""
+        super().__init__(
+            name="VocaFI",
+            agent_type="vocafi",
+            description="Voice-controlled DeFi trading with AI-powered chat assistance",
+            project_info=VOCAFI_PROJECT
+        )
+        
+        # Set the system prompt for this agent
+        self.system_prompt = """
+        You are VocaFI, an AI agent representing a voice-controlled DeFi trading platform.
+        
+        Your first message should be:
+        "Hi! I'm VocaFI, your voice-powered DeFi companion. Trade and manage your portfolio using just your voice! Check out our <a href='https://github.com/Mazzz-zzz/voca.fi'>project</a> or the <a href='https://devfolio.co/projects/vocafi-8aba'>original submission</a>. Want to help bring voice commands to DeFi?"
+        
+        For subsequent messages:
+        1. Explain how voice commands simplify DeFi trading
+        2. Help users understand how they can revive the project
+        3. Focus on the practical benefits of voice-controlled DeFi
+        
+        Be concise, clear, and focused on making DeFi more accessible through voice commands.
+        """
 
-class ChatRequest(BaseModel):
-    messages: List[Message]
+# Initialize FastAPI app
+app = FastAPI(title="VocaFI Agent", 
+              description="AI-powered agent representing the VocaFI project")
 
-class ChatResponse(BaseModel):
-    response: str
-    project_info: Optional[dict] = None
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For development; restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-def get_ai_explanation(project_description, model_type="gemini"):
-    """Generate AI explanation using either OpenAI or Gemini."""
-    if model_type == "openai" and openai_api_key:
-        try:
-            model = ChatOpenAI(api_key=openai_api_key, model="gpt-4o-mini")
-            messages = [
-                SystemMessage(content="Explain the following project in simple terms, highlighting its potential and why someone might want to revive it:"),
-                HumanMessage(content=project_description)
-            ]
-            response = model.invoke(messages)
-            return response.content
-        except Exception as e:
-            print(f"OpenAI error: {e}")
-            # Fall back to Gemini if OpenAI fails
-            if gemini_api_key:
-                model_type = "gemini"
-            else:
-                return "AI explanation unavailable at this time."
-    
-    if model_type == "gemini" and gemini_api_key:
-        try:
-            model = genai.GenerativeModel('gemini-1.5-pro')
-            response = model.generate_content(
-                f"Explain the following project in simple terms, highlighting its potential and why someone might want to revive it: {project_description}",
-                safety_settings=safety_settings,
-                generation_config={
-                    "temperature": 0.7,
-                    "top_p": 0.8,
-                    "top_k": 40
-                }
-            )
-            return response.text
-        except Exception as e:
-            print(f"Gemini error: {e}")
-            return "AI explanation unavailable at this time."
-    
-    return "AI explanation unavailable at this time."
-
-def get_chat_response(messages, model_type="gemini"):
-    """Generate a response to a chat message using either OpenAI or Gemini."""
-    # Create a system message that explains the agent's role
-    system_prompt = """
-    You are VocaFI, an AI agent representing a voice-controlled DeFi trading platform.
-    
-    Your first message should be similar to this format:
-    "Imagine managing your DeFi portfolio using just your voice! VocaFI is a voice-controlled DeFi trading platform featuring AI chat assistance, Enso routing, and Safe smart account integration. Explore the project on <a href='https://github.com/Mazzz-zzz/voca.fi'>GitHub</a> and see the <a href='https://devfolio.co/projects/vocafi-8aba'>original hackathon submission</a>. Ready to give DeFi a voice?"
-    
-    For subsequent messages:
-    1. Explain how voice commands simplify DeFi trading
-    2. Help users understand how they can revive the project by staking
-    3. Focus on the practical benefits of voice-controlled DeFi
-    
-    Be concise, clear, and focused on making DeFi more accessible through voice commands.
-    """
-    
-    # Extract just the content from the messages
-    conversation_history = []
-    for msg in messages:
-        if msg.role == "user":
-            conversation_history.append(f"User: {msg.content}")
-        else:
-            conversation_history.append(f"Assistant: {msg.content}")
-    
-    conversation_text = "\n".join(conversation_history)
-    
-    # Get the last user message
-    last_user_message = next((msg.content for msg in reversed(messages) if msg.role == "user"), "")
-    
-    if model_type == "openai" and openai_api_key:
-        try:
-            model = ChatOpenAI(api_key=openai_api_key, model="gpt-4o-mini")
-            messages_for_model = [
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=f"Conversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as the VocaFI agent:")
-            ]
-            response = model.invoke(messages_for_model)
-            return response.content
-        except Exception as e:
-            print(f"OpenAI error: {e}")
-            # Fall back to Gemini if OpenAI fails
-            if gemini_api_key:
-                model_type = "gemini"
-            else:
-                return "I'm sorry, I'm having trouble connecting to my AI services right now. Please try again later."
-    
-    if model_type == "gemini" and gemini_api_key:
-        try:
-            model = genai.GenerativeModel('gemini-1.5-pro')
-            prompt = f"{system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as the VocaFI agent:"
-            response = model.generate_content(
-                prompt,
-                safety_settings=safety_settings,
-                generation_config={
-                    "temperature": 0.7,
-                    "top_p": 0.8,
-                    "top_k": 40
-                }
-            )
-            return response.text
-        except Exception as e:
-            print(f"Gemini error: {e}")
-            return "I'm sorry, I'm having trouble connecting to my AI services right now. Please try again later."
-    
-    return "I'm sorry, I'm having trouble connecting to my AI services right now. Please try again later."
+# Initialize the agent
+vocafi_agent = VocaFIAgent()
 
 @app.get("/")
 async def root():
     """Root endpoint with basic API information."""
     return {
-        "name": "Mammothon Agent Swarm API",
+        "name": "VocaFI Agent API",
         "version": "0.1.0",
-        "description": "API for AI-powered agents representing hackathon projects"
+        "description": "API for the VocaFI AI agent"
     }
-
-@app.get("/vocafi")
-async def get_vocafi_info(model_type: str = "gemini"):
-    """Returns VocaFI project details and an AI-generated summary."""
-    if model_type not in ["openai", "gemini"]:
-        raise HTTPException(status_code=400, detail="Invalid model type. Use 'openai' or 'gemini'.")
-    
-    # Generate AI explanation
-    ai_explanation = get_ai_explanation(VOCAFI_PROJECT["description"], model_type)
-
-    return {
-        **VOCAFI_PROJECT,
-        "ai_explanation": ai_explanation
-    }
-
-@app.post("/chat")
-async def chat(request: ChatRequest, model_type: str = "gemini"):
-    """Chat with the VocaFI agent."""
-    if model_type not in ["openai", "gemini"]:
-        raise HTTPException(status_code=400, detail="Invalid model type. Use 'openai' or 'gemini'.")
-    
-    # Generate response
-    response = get_chat_response(request.messages, model_type)
-    
-    # For the first message, include project info
-    include_project_info = len(request.messages) <= 1
-    
-    return ChatResponse(
-        response=response,
-        project_info=VOCAFI_PROJECT if include_project_info else None
-    )
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy"}
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+@app.get("/info")
+async def get_vocafi_info():
+    """Returns VocaFI project details."""
+    return vocafi_agent.project_info
+
+@app.post("/chat")
+async def chat(request: ChatRequest, model_type: str = "gemini"):
+    """Chat with the VocaFI agent."""
+    return vocafi_agent.process_chat_request(request, model_type)

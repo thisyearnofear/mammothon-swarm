@@ -1,29 +1,16 @@
 import os
-import uvicorn
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from agents.vocafi_agent import app as vocafi_app
-from agents.wooly_agent import app as wooly_app
-from agents.clarity_agent import app as clarity_app
-from agents.hello_world_computer_agent import app as hwc_app
-from pathlib import Path
-from .check_dirs import check_directory_structure
+from fastapi.responses import JSONResponse, RedirectResponse
+import importlib.util
+import sys
 
-# Run directory structure check
-check_directory_structure()
-
-# Get the absolute path to the static directory
-BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_DIR = BASE_DIR / "static"
-
-print(f"Using static directory: {STATIC_DIR}")
-
-# Create a new FastAPI app for serving both API and static files
-app = FastAPI(title="Mammothon Agent Swarm",
-             description="AI-powered agents representing hackathon projects")
+# Create FastAPI app
+app = FastAPI(
+    title="Mammothon Agent Swarm API",
+    description="API for AI-powered agents representing hackathon projects",
+    version="1.0.0"
+)
 
 # Add CORS middleware
 app.add_middleware(
@@ -34,49 +21,109 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount the agents
-app.mount("/api/vocafi", vocafi_app)
-app.mount("/api/wooly", wooly_app)
-app.mount("/api/clarity", clarity_app)
-app.mount("/api/hwc", hwc_app)
-
-# Ensure static directory exists
-if not STATIC_DIR.exists():
-    # Try alternative paths
-    alt_paths = [
-        Path("/workspace/src/static"),
-        Path("/app/src/static"),
-        Path("./static"),
-        Path("../static")
-    ]
-    
-    for path in alt_paths:
-        if path.exists():
-            STATIC_DIR = path
-            print(f"Found static directory at alternative path: {STATIC_DIR}")
-            break
-    else:
-        raise RuntimeError(f"Static directory not found. Tried: {[str(p) for p in [STATIC_DIR] + alt_paths]}")
-
-# Serve static files
-app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
-
-# Serve the index.html file
-@app.get("/", response_class=HTMLResponse)
-async def read_root():
-    """Serve the main HTML file."""
-    try:
-        with open("src/static/index.html", "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="index.html not found")
-
 # Health check endpoint
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        "version": "1.0.0"
+    }
+
+# API documentation redirect
+@app.get("/")
+async def root():
+    """Redirect to API documentation."""
+    return {
+        "message": "Welcome to the Mammothon Agent Swarm API",
+        "documentation": "/docs"
+    }
+
+# Import and mount agent apps
+def import_agent_module(agent_name):
+    """Dynamically import an agent module."""
+    try:
+        # Construct the module path
+        module_path = f"src.agents.{agent_name}_agent"
+        
+        # Import the module
+        module = __import__(module_path, fromlist=['app'])
+        
+        # Return the FastAPI app from the module
+        return module.app
+    except ImportError as e:
+        print(f"Error importing agent module {agent_name}: {e}")
+        return None
+    except AttributeError as e:
+        print(f"Error accessing app in agent module {agent_name}: {e}")
+        return None
+
+# List of available agents
+AVAILABLE_AGENTS = ["vocafi", "mammothon"]
+
+# Mount each agent's API
+for agent_name in AVAILABLE_AGENTS:
+    agent_app = import_agent_module(agent_name)
+    if agent_app:
+        app.mount(f"/agents/{agent_name}", agent_app)
+        print(f"Mounted {agent_name} agent at /agents/{agent_name}")
+    else:
+        print(f"Failed to mount {agent_name} agent")
+
+# Get list of available agents
+@app.get("/agents")
+async def list_agents():
+    """List all available agents."""
+    agents = []
+    for agent_name in AVAILABLE_AGENTS:
+        try:
+            # Import the agent module to get its info
+            module_path = f"src.agents.{agent_name}_agent"
+            module = __import__(module_path, fromlist=[f'{agent_name}_agent'])
+            
+            # Get the agent instance
+            agent_instance = getattr(module, f"{agent_name}_agent")
+            
+            # Add agent info to the list
+            agents.append({
+                "name": agent_instance.name,
+                "type": agent_instance.agent_type,
+                "description": agent_instance.description,
+                "endpoint": f"/agents/{agent_name}",
+                "project_info": agent_instance.project_info
+            })
+        except (ImportError, AttributeError) as e:
+            print(f"Error getting info for {agent_name} agent: {e}")
+            # Add minimal info if we can't get the full details
+            agents.append({
+                "name": agent_name.capitalize(),
+                "type": agent_name,
+                "description": "Agent information unavailable",
+                "endpoint": f"/agents/{agent_name}"
+            })
+    
+    return {"agents": agents}
+
+# Error handler for 404 Not Found
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc: HTTPException):
+    """Handle 404 errors."""
+    return JSONResponse(
+        status_code=404,
+        content={
+            "error": "Not Found",
+            "message": "The requested resource was not found.",
+            "available_endpoints": [
+                "/",
+                "/health",
+                "/agents",
+                "/agents/{agent_name}",
+                "/docs",
+                "/redoc"
+            ]
+        }
+    )
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8001))
-    uvicorn.run(app, host="0.0.0.0", port=port) 
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000) 

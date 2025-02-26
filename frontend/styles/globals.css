@@ -1,0 +1,443 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background-color: #f8f9fa;
+  height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Wallet Section */
+.wallet-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+  padding: 10px;
+}
+
+.wallet-connect {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.connect-button {
+  background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.connect-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.connect-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wallet-address {
+  background-color: #e9ecef;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 0.9em;
+}
+
+.disconnect-button {
+  background: #f8f9fa;
+  border: 1px solid #ced4da;
+  color: #6c757d;
+  border-radius: 20px;
+  padding: 4px 8px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.disconnect-button:hover {
+  background-color: #e9ecef;
+}
+
+.wallet-status {
+  font-size: 0.9em;
+  color: #6c757d;
+  margin-top: 5px;
+}
+
+/* Agent Grid */
+.agent-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Agent Buttons */
+.agent-button {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.agent-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.agent-icon {
+  width: 80px;
+  height: 80px;
+}
+
+.agent-label {
+  color: white;
+  font-size: 14px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Mammoth SVG styling */
+.mammoth-tusks {
+  fill: #f5f5f5;
+}
+
+.mammoth-body {
+  fill: #8a5fb9;
+}
+
+.mammoth-eye {
+  fill: white;
+}
+
+.mammoth-pupil {
+  fill: #333;
+}
+
+/* Chat Components */
+.chat-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 998;
+}
+
+.chat-container {
+  width: 380px;
+  height: 500px;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 999;
+  transition: all 0.3s ease;
+}
+
+.chat-header {
+  background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-header h5 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.chat-body {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-footer {
+  padding: 10px 15px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+}
+
+.chat-input {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  padding: 8px 15px;
+  outline: none;
+}
+
+.send-button {
+  background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin-left: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.message {
+  max-width: 80%;
+  padding: 10px 15px;
+  border-radius: 15px;
+  margin-bottom: 10px;
+  word-wrap: break-word;
+}
+
+.user-message {
+  background-color: #e9ecef;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+
+.assistant-message {
+  background-color: #f3e5f5;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 12px;
+  background-color: #f0f0f0;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  width: fit-content;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  margin: 0 2px;
+  background-color: #888;
+  border-radius: 50%;
+  display: inline-block;
+  opacity: 0.4;
+  animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  20% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.9em;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.footer a {
+  color: #6e48aa;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.footer a:hover {
+  opacity: 0.8;
+}
+
+/* Style for the send button when sending */
+button.sending {
+  background-color: #ccc !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+/* Error message styling */
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  border-left: 3px solid #c62828;
+}
+
+/* Disabled input styling */
+input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* Hyperlink styling in chat messages */
+.message a {
+  color: #0070f3;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.message a:hover {
+  text-decoration: underline;
+  color: #0056b3;
+}
+
+.assistant-message a {
+  color: #6e48aa;
+  font-weight: 500;
+}
+
+.user-message a {
+  color: #4a6da7;
+  font-weight: 500;
+}
+
+/* Agent links section */
+.agent-links {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  font-size: 0.9rem;
+}
+
+.agent-links p {
+  margin: 0.5rem 0;
+}
+
+.agent-links a {
+  color: #0070f3;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.agent-links a:hover {
+  text-decoration: underline;
+  color: #0056b3;
+}
+
+/* Code blocks in messages */
+.message pre {
+  background-color: #f5f5f5;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.message.user pre {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Lists in messages */
+.message ul,
+.message ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.message.user ul,
+.message.user ol {
+  color: white;
+}
+
+/* Bold and italic text */
+.message strong {
+  font-weight: 600;
+}
+
+.message em {
+  font-style: italic;
+}
+
+/* Blockquotes */
+.message blockquote {
+  border-left: 3px solid #ddd;
+  margin: 0.5rem 0;
+  padding-left: 1rem;
+  color: #666;
+}
+
+.message.user blockquote {
+  border-left-color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+}

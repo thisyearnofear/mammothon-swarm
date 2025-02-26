@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Mammoth body -->
+  <ellipse cx="100" cy="120" rx="70" ry="60" fill="#6e48aa" />
+  
+  <!-- Head -->
+  <circle cx="100" cy="70" r="40" fill="#6e48aa" />
+  
+  <!-- Tusks -->
+  <path d="M70 80 Q 50 100 40 130" stroke="#f5f5f5" stroke-width="10" fill="none" />
+  <path d="M130 80 Q 150 100 160 130" stroke="#f5f5f5" stroke-width="10" fill="none" />
+  
+  <!-- Trunk -->
+  <path d="M100 90 Q 110 110 100 130 Q 90 150 100 170" stroke="#6e48aa" stroke-width="15" fill="none" />
+  
+  <!-- Eyes -->
+  <circle cx="80" cy="65" r="8" fill="white" />
+  <circle cx="120" cy="65" r="8" fill="white" />
+  
+  <!-- Pupils - blinking animation -->
+  <circle cx="80" cy="65" r="4" fill="#333">
+    <animate attributeName="ry" values="4;1;4" dur="2.5s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="120" cy="65" r="4" fill="#333">
+    <animate attributeName="ry" values="4;1;4" dur="2.5s" repeatCount="indefinite" />
+  </circle>
+  
+  <!-- Ears -->
+  <ellipse cx="60" cy="60" rx="15" ry="20" fill="#6e48aa" />
+  <ellipse cx="140" cy="60" rx="15" ry="20" fill="#6e48aa" />
+  
+  <!-- Sound waves - representing voice control -->
+  <path d="M30 100 Q 40 90 30 80" stroke="#9d50bb" stroke-width="3" fill="none">
+    <animate attributeName="d" values="M30 100 Q 40 90 30 80;M30 95 Q 40 100 30 105;M30 100 Q 40 90 30 80" dur="2s" repeatCount="indefinite" />
+  </path>
+  <path d="M20 110 Q 35 90 20 70" stroke="#9d50bb" stroke-width="3" fill="none">
+    <animate attributeName="d" values="M20 110 Q 35 90 20 70;M20 100 Q 35 110 20 120;M20 110 Q 35 90 20 70" dur="3s" repeatCount="indefinite" />
+  </path>
+  <path d="M10 120 Q 30 90 10 60" stroke="#9d50bb" stroke-width="3" fill="none">
+    <animate attributeName="d" values="M10 120 Q 30 90 10 60;M10 105 Q 30 120 10 135;M10 120 Q 30 90 10 60" dur="4s" repeatCount="indefinite" />
+  </path>
+  
+  <!-- Headphones -->
+  <path d="M60 40 C 60 20 140 20 140 40" stroke="#9d50bb" stroke-width="5" fill="none" />
+  <rect x="45" y="40" width="15" height="25" rx="5" fill="#9d50bb" />
+  <rect x="140" y="40" width="15" height="25" rx="5" fill="#9d50bb" />
+</svg> 

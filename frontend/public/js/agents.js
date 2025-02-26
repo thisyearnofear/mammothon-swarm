@@ -1,4 +1,4 @@
-import { apiBaseUrl } from "/js/config.js";
+import { apiBaseUrl } from "./config.js";
 
 // Add debugging
 console.log("Agents.js loaded");
