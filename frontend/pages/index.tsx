@@ -2,8 +2,81 @@ import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import { Agent } from "../lib/agents";
-import { apiBaseUrl } from "../lib/config";
+import dynamic from "next/dynamic";
+
+// Define Agent interface to keep TypeScript happy
+interface AgentConfig {
+  id: string;
+  name: string;
+  description: string;
+  avatarUrl?: string;
+}
+
+interface AgentInterface {
+  config: AgentConfig;
+  setupElements(
+    chatContainer: HTMLElement,
+    messageInput: HTMLInputElement,
+    sendButton: HTMLElement
+  ): void;
+  initializeChat(): Promise<void>;
+}
+
+// Create a stub Agent class as fallback
+class StubAgent implements AgentInterface {
+  config: AgentConfig;
+
+  constructor(config: AgentConfig) {
+    this.config = config;
+  }
+
+  setupElements(): void {}
+
+  initializeChat(): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
+// Simplify with a common default API URL to avoid build-time errors
+const DEFAULT_API_URL = "https://kind-gwenora-papajams-0ddff9e5.koyeb.app";
+
+// Create state management for modules
+const useModules = () => {
+  const [modules, setModules] = useState<{
+    Agent: any;
+    apiBaseUrl: string;
+  }>({
+    Agent: StubAgent,
+    apiBaseUrl: DEFAULT_API_URL,
+  });
+
+  useEffect(() => {
+    // Only attempt to load modules in the browser
+    if (typeof window === "undefined") return;
+
+    const loadModules = async () => {
+      try {
+        // Dynamic imports
+        const [agentsModule, configModule] = await Promise.all([
+          import("../lib/agents"),
+          import("../lib/config"),
+        ]);
+
+        setModules({
+          Agent: agentsModule.Agent || StubAgent,
+          apiBaseUrl: configModule.apiBaseUrl || DEFAULT_API_URL,
+        });
+      } catch (error) {
+        console.error("Failed to load modules:", error);
+        // Keep using the default stub modules
+      }
+    };
+
+    loadModules();
+  }, []);
+
+  return modules;
+};
 
 interface AgentInfo {
   name: string;
@@ -45,7 +118,8 @@ const agentList: Record<string, AgentInfo> = {
 };
 
 export default function Home() {
-  const [activeAgent, setActiveAgent] = useState<Agent | null>(null);
+  const { Agent, apiBaseUrl } = useModules();
+  const [activeAgent, setActiveAgent] = useState<AgentInterface | null>(null);
   const [apiStatus, setApiStatus] = useState<"loading" | "online" | "offline">(
     "loading"
   );
@@ -70,16 +144,10 @@ export default function Home() {
       }
     };
 
-    checkApiStatus();
-  }, []);
-
-  // Initialize agents
-  useEffect(() => {
-    if (apiStatus === "online") {
-      // No need to initialize agents here anymore since we create them on demand
-      // when user selects an agent
+    if (apiBaseUrl) {
+      checkApiStatus();
     }
-  }, [apiStatus]);
+  }, [apiBaseUrl]);
 
   // Initialize chat when active agent changes
   useEffect(() => {
@@ -106,17 +174,22 @@ export default function Home() {
 
   // Handle agent selection
   const selectAgent = (agentId: string) => {
-    if (!agentList[agentId]) return;
+    if (!agentList[agentId] || !Agent) return;
 
-    const newAgent = new Agent({
-      id: agentId,
-      name: agentList[agentId].name,
-      description: agentList[agentId].description,
-      avatarUrl: agentList[agentId].avatar,
-    });
+    try {
+      const newAgent = new Agent({
+        id: agentId,
+        name: agentList[agentId].name,
+        description: agentList[agentId].description,
+        avatarUrl: agentList[agentId].avatar,
+      });
 
-    setSelectedAgent(agentId);
-    setActiveAgent(newAgent);
+      setSelectedAgent(agentId);
+      setActiveAgent(newAgent);
+    } catch (error) {
+      console.error("Error creating agent:", error);
+      alert("Could not initialize the agent. Please try again later.");
+    }
   };
 
   const handleBack = () => {

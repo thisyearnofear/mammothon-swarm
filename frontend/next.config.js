@@ -10,6 +10,18 @@ const nextConfig = {
     // Ignore TypeScript errors during the build
     ignoreBuildErrors: true,
   },
+  // Avoid errors from missing modules
+  webpack: (config, { isServer }) => {
+    // Handle missing modules gracefully
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      os: false,
+    };
+
+    return config;
+  },
   // Configure API proxy for development
   async rewrites() {
     return [
