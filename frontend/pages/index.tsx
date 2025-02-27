@@ -2,7 +2,30 @@ import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import type { AgentConfig, AgentInterface } from "../src/lib/types";
+
+// Define types inline to avoid import issues
+interface AgentConfig {
+  id: string;
+  name: string;
+  description: string;
+  avatarUrl?: string;
+  apiUrl?: string;
+}
+
+interface AgentInterface {
+  config: AgentConfig;
+  setupElements(
+    chatContainer: HTMLDivElement,
+    messageInput: HTMLInputElement,
+    sendButton: HTMLButtonElement
+  ): void;
+  initializeChat(): Promise<void>;
+}
+
+interface Message {
+  role: string;
+  content: string;
+}
 
 interface AgentInfo {
   name: string;
@@ -259,7 +282,7 @@ class StubAgent implements AgentInterface {
 // Create state management for modules
 const useModules = () => {
   const [modules, setModules] = useState<{
-    Agent: any;
+    Agent: typeof StubAgent;
     apiBaseUrl: string;
   }>({
     Agent: StubAgent,
@@ -272,16 +295,38 @@ const useModules = () => {
 
     const loadModules = async () => {
       try {
-        // Dynamic imports from src/lib
-        const [agentsModule, configModule] = await Promise.all([
-          import("../src/lib/agents").then((m) => ({ Agent: m.Agent })),
-          import("../src/lib/config").then((m) => ({
-            apiBaseUrl: m.apiBaseUrl,
-          })),
-        ]);
+        // Use direct imports
+        const agentsModule = { Agent: StubAgent };
+        const configModule = {
+          apiBaseUrl: "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
+        };
+
+        // Try to load the real modules if possible
+        try {
+          if (typeof window !== "undefined") {
+            const [realAgentsModule, realConfigModule] = await Promise.all([
+              import("../src/lib/agents").catch(() => ({ Agent: StubAgent })),
+              import("../src/lib/config").catch(() => ({
+                apiBaseUrl: "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
+              })),
+            ]);
+
+            if (realAgentsModule.Agent) {
+              // Cast to any to avoid type issues during build
+              agentsModule.Agent = realAgentsModule.Agent as any;
+            }
+
+            if (realConfigModule.apiBaseUrl) {
+              configModule.apiBaseUrl = realConfigModule.apiBaseUrl;
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load dynamic modules:", e);
+          // Continue with stub modules
+        }
 
         setModules({
-          Agent: agentsModule.Agent || StubAgent,
+          Agent: agentsModule.Agent as typeof StubAgent,
           apiBaseUrl:
             configModule.apiBaseUrl ||
             "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
