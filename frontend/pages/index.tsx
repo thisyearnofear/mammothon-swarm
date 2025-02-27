@@ -45,7 +45,6 @@ const agentList: Record<string, AgentInfo> = {
 };
 
 export default function Home() {
-  const [agents, setAgents] = useState<Agent[]>([]);
   const [activeAgent, setActiveAgent] = useState<Agent | null>(null);
   const [apiStatus, setApiStatus] = useState<"loading" | "online" | "offline">(
     "loading"

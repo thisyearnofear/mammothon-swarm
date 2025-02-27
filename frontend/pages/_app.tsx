@@ -2,32 +2,51 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { useEffect } from "react";
 
+// Define the rate limit handler type
+type RateLimitHandler = <T>(
+  retryFn: () => Promise<T>,
+  maxRetries?: number,
+  initialDelay?: number
+) => Promise<T>;
+
+// Extend Window interface
+declare global {
+  interface Window {
+    handleApiRateLimit?: RateLimitHandler;
+    agentsInitialized?: boolean;
+  }
+}
+
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     console.log("_app.tsx: App mounted");
 
-    // Initialize rate limit handler on window object
+    // Initialize rate limit handler
     if (typeof window !== "undefined") {
-      // @ts-expect-error - We know this property doesn't exist yet
-      window.handleApiRateLimit = async (
-        retryFn: () => Promise<Response>,
+      const handler: RateLimitHandler = async function <T>(
+        retryFn: () => Promise<T>,
         maxRetries = 3,
         initialDelay = 1000
-      ): Promise<Response> => {
+      ): Promise<T> {
         let retryCount = 0;
         let delay = initialDelay;
 
         while (retryCount < maxRetries) {
           try {
             const response = await retryFn();
-            if (response.status !== 429) {
+            // Check if response is a Response object and handle rate limiting
+            if (!(response instanceof Response) || response.status !== 429) {
               return response;
             }
             console.log(
               `Rate limited, attempt ${retryCount + 1} of ${maxRetries}`
             );
           } catch (error) {
-            console.error("Error in retry attempt:", error);
+            if (error instanceof Error) {
+              console.error("Error in retry attempt:", error.message);
+            } else {
+              console.error("Error in retry attempt:", error);
+            }
           }
 
           retryCount++;
@@ -37,6 +56,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
         throw new Error("Max retries exceeded");
       };
+
+      window.handleApiRateLimit = handler;
       console.log("Rate limit handler initialized");
     }
 
@@ -49,8 +70,7 @@ export default function App({ Component, pageProps }: AppProps) {
     console.log("_app.tsx: Checking agent initialization");
     if (typeof window !== "undefined") {
       console.log("_app.tsx: Window object exists");
-      // @ts-expect-error - We know this property doesn't exist yet
-      if (!window.agentsInitialized) {
+      if (!("agentsInitialized" in window)) {
         console.log("_app.tsx: Agents are NOT initialized!");
         console.log("_app.tsx: DOM elements for agents:");
         console.log("vocafi-button:", document.getElementById("vocafi-button"));
