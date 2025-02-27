@@ -72,6 +72,23 @@ export default function App({ Component, pageProps }: AppProps) {
     if (typeof window !== "undefined") {
       console.log("_app.tsx: Window object exists");
 
+      // Check if agents are already initialized
+      if (window.agentsInitialized) {
+        console.log("_app.tsx: Agents are already initialized!");
+      } else {
+        console.log("_app.tsx: Agents are NOT initialized!");
+
+        // Log DOM elements for debugging
+        console.log("_app.tsx: DOM elements for agents:");
+        console.log("vocafi-button:", document.getElementById("vocafi-button"));
+        console.log("wooly-button:", document.getElementById("wooly-button"));
+        console.log(
+          "clarity-button:",
+          document.getElementById("clarity-button")
+        );
+        console.log("hwc-button:", document.getElementById("hwc-button"));
+      }
+
       // Set a flag to indicate that the app is ready for agent initialization
       window.agentsInitialized = true;
 
