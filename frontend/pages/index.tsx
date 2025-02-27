@@ -2,81 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import dynamic from "next/dynamic";
-
-// Define Agent interface to keep TypeScript happy
-interface AgentConfig {
-  id: string;
-  name: string;
-  description: string;
-  avatarUrl?: string;
-}
-
-interface AgentInterface {
-  config: AgentConfig;
-  setupElements(
-    chatContainer: HTMLElement,
-    messageInput: HTMLInputElement,
-    sendButton: HTMLElement
-  ): void;
-  initializeChat(): Promise<void>;
-}
-
-// Create a stub Agent class as fallback
-class StubAgent implements AgentInterface {
-  config: AgentConfig;
-
-  constructor(config: AgentConfig) {
-    this.config = config;
-  }
-
-  setupElements(): void {}
-
-  initializeChat(): Promise<void> {
-    return Promise.resolve();
-  }
-}
-
-// Simplify with a common default API URL to avoid build-time errors
-const DEFAULT_API_URL = "https://kind-gwenora-papajams-0ddff9e5.koyeb.app";
-
-// Create state management for modules
-const useModules = () => {
-  const [modules, setModules] = useState<{
-    Agent: any;
-    apiBaseUrl: string;
-  }>({
-    Agent: StubAgent,
-    apiBaseUrl: DEFAULT_API_URL,
-  });
-
-  useEffect(() => {
-    // Only attempt to load modules in the browser
-    if (typeof window === "undefined") return;
-
-    const loadModules = async () => {
-      try {
-        // Dynamic imports
-        const [agentsModule, configModule] = await Promise.all([
-          import("../lib/agents"),
-          import("../lib/config"),
-        ]);
-
-        setModules({
-          Agent: agentsModule.Agent || StubAgent,
-          apiBaseUrl: configModule.apiBaseUrl || DEFAULT_API_URL,
-        });
-      } catch (error) {
-        console.error("Failed to load modules:", error);
-        // Keep using the default stub modules
-      }
-    };
-
-    loadModules();
-  }, []);
-
-  return modules;
-};
+import type { AgentConfig, AgentInterface } from "../lib/types";
 
 interface AgentInfo {
   name: string;
@@ -165,7 +91,7 @@ export default function Home() {
       );
 
       // Initialize the chat
-      activeAgent.initializeChat().catch((error) => {
+      activeAgent.initializeChat().catch((error: unknown) => {
         console.error("Error initializing chat:", error);
         // Add error handling UI if needed
       });
@@ -314,3 +240,58 @@ export default function Home() {
     </div>
   );
 }
+
+// Create a stub Agent class as fallback
+class StubAgent implements AgentInterface {
+  config: AgentConfig;
+
+  constructor(config: AgentConfig) {
+    this.config = config;
+  }
+
+  setupElements(): void {}
+
+  initializeChat(): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
+// Create state management for modules
+const useModules = () => {
+  const [modules, setModules] = useState<{
+    Agent: any;
+    apiBaseUrl: string;
+  }>({
+    Agent: StubAgent,
+    apiBaseUrl: "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
+  });
+
+  useEffect(() => {
+    // Only attempt to load modules in the browser
+    if (typeof window === "undefined") return;
+
+    const loadModules = async () => {
+      try {
+        // Dynamic imports with relative paths
+        const [agentsModule, configModule] = await Promise.all([
+          import("../lib/agents").then((m) => ({ Agent: m.Agent })),
+          import("../lib/config").then((m) => ({ apiBaseUrl: m.apiBaseUrl })),
+        ]);
+
+        setModules({
+          Agent: agentsModule.Agent || StubAgent,
+          apiBaseUrl:
+            configModule.apiBaseUrl ||
+            "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
+        });
+      } catch (error: unknown) {
+        console.error("Failed to load modules:", error);
+        // Keep using the default stub modules
+      }
+    };
+
+    loadModules();
+  }, []);
+
+  return modules;
+};
