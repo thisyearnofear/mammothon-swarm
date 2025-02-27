@@ -17,10 +17,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "lib/*": ["lib/*"]
+      "lib/*": ["src/lib/*"]
     },
     "typeRoots": ["./node_modules/@types", "./types"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "lib/**/*"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/**/*"],
   "exclude": ["node_modules"]
 }

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import type { AgentConfig, AgentInterface } from "../lib/types";
+import type { AgentConfig, AgentInterface } from "../src/lib/types";
 
 interface AgentInfo {
   name: string;
@@ -272,10 +272,12 @@ const useModules = () => {
 
     const loadModules = async () => {
       try {
-        // Dynamic imports with relative paths
+        // Dynamic imports from src/lib
         const [agentsModule, configModule] = await Promise.all([
-          import("../lib/agents").then((m) => ({ Agent: m.Agent })),
-          import("../lib/config").then((m) => ({ apiBaseUrl: m.apiBaseUrl })),
+          import("../src/lib/agents").then((m) => ({ Agent: m.Agent })),
+          import("../src/lib/config").then((m) => ({
+            apiBaseUrl: m.apiBaseUrl,
+          })),
         ]);
 
         setModules({

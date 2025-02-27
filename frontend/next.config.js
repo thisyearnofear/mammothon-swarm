@@ -22,14 +22,26 @@ const nextConfig = {
       os: false,
     };
 
-    // Add lib directory to module resolution
+    // Add src and lib directories to module resolution
     config.resolve.modules = [
       path.resolve(__dirname),
-      path.resolve(__dirname, "lib"),
+      path.resolve(__dirname, "src"),
+      path.resolve(__dirname, "src/lib"),
       "node_modules",
     ];
 
+    // Add module aliases
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@": path.resolve(__dirname),
+      lib: path.resolve(__dirname, "src/lib"),
+    };
+
     return config;
+  },
+  experimental: {
+    esmExternals: "loose",
+    externalDir: true,
   },
   // Configure API proxy for development
   async rewrites() {
