@@ -12,7 +12,7 @@ type RateLimitHandler = <T>(
 // Extend Window interface
 declare global {
   interface Window {
-    handleApiRateLimit?: RateLimitHandler;
+    handleApiRateLimit?: (<T>(fn: () => Promise<T>) => Promise<T>) | undefined;
     agentsInitialized?: boolean;
   }
 }

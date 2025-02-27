@@ -2,6 +2,11 @@
   base = "frontend"
   command = "npm install && npm run build"
   publish = ".next"
+  functions = "functions"
+
+[functions]
+  directory = "functions"
+  node_bundler = "esbuild"
 
 # Redirects and headers are CRITICAL for SPAs to work correctly
 [[redirects]]
@@ -12,12 +17,13 @@
 
 [[redirects]]
   from = "/*"
-  to = "/.netlify/functions/nextjs-server"
+  to = "/.netlify/functions/server"
   status = 200
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
   NODE_VERSION = "18"
+  NODE_ENV = "production"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
