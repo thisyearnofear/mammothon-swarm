@@ -3,7 +3,7 @@ const path = require("path");
 
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  swcMinify: false,
   eslint: {
     // Disable ESLint during production builds to prevent failures
     ignoreDuringBuilds: true,
@@ -14,7 +14,7 @@ const nextConfig = {
   },
   // Avoid errors from missing modules
   webpack: (config, { isServer }) => {
-    // Handle missing modules gracefully
+    // Add polyfills and handle externals
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
@@ -35,12 +35,13 @@ const nextConfig = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname),
       lib: path.resolve(__dirname, "src/lib"),
+      react: path.resolve(__dirname, "node_modules/react"),
     };
 
     return config;
   },
   experimental: {
-    esmExternals: "loose",
+    esmExternals: true,
   },
   // Configure API proxy for development
   async rewrites() {

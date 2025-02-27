@@ -19,7 +19,7 @@ gemini_api_key = os.getenv("GEMINI_API_KEY")
 # Configure Gemini
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
-    # Set default safety settings for Gemini
+    # Set default safety settings for Gemini - make them less restrictive
     safety_settings = [
         {
             "category": "HARM_CATEGORY_HARASSMENT",
@@ -118,8 +118,13 @@ class BaseAgent:
         
         if model_type == "gemini" and gemini_api_key:
             try:
+                # Use the correct model name for Gemini Pro
+                print(f"Using Gemini API with key: {gemini_api_key[:5]}...")
                 model = genai.GenerativeModel('gemini-1.5-pro')
                 prompt = f"{self.system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as the {self.name} agent:"
+                
+                print(f"Sending prompt to Gemini: {prompt[:100]}...")
+                print(f"Safety settings: {safety_settings}")
                 
                 # Add error handling for the response
                 try:
@@ -129,7 +134,8 @@ class BaseAgent:
                         generation_config={
                             "temperature": 0.7,
                             "top_p": 0.8,
-                            "top_k": 40
+                            "top_k": 40,
+                            "max_output_tokens": 2048
                         }
                     )
                     
@@ -137,13 +143,17 @@ class BaseAgent:
                         print("Empty response from Gemini")
                         return "I'm sorry, I received an empty response. Please try again."
                         
+                    print(f"Received response from Gemini: {response.text[:100]}...")
                     return response.text
                 except Exception as content_error:
                     print(f"Gemini content generation error: {content_error}")
+                    print(f"Error type: {type(content_error)}")
+                    print(f"Error details: {str(content_error)}")
                     return "I'm sorry, I had trouble generating a response. Please try again."
-                    
             except Exception as e:
                 print(f"Gemini error: {e}")
+                print(f"Error type: {type(e)}")
+                print(f"Error details: {str(e)}")
                 return "I'm sorry, I'm having trouble connecting to my AI services right now. Please try again later."
         
         return "I'm sorry, I'm having trouble connecting to my AI services right now. Please try again later."
