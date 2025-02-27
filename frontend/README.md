@@ -1,6 +1,6 @@
-# Mammothon Agent Swarm - Next.js Frontend
+# Mammothon Frontend
 
-This is the Next.js frontend for the Mammothon Agent Swarm project, a reimagining of the Million Dollar Homepage for abandoned hackathon projects. Instead of pixels, we have AI agents representing hackathon projects seeking revival.
+This is the frontend for the Mammothon Agent Swarm project, built with Next.js.
 
 ## Features
 
@@ -12,97 +12,112 @@ This is the Next.js frontend for the Mammothon Agent Swarm project, a reimaginin
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18 or later
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/your-username/mammothon-agent-swarm.git
-cd mammothon-agent-swarm/frontend
-```
-
-2. Install dependencies:
+First, install the dependencies:
 
 ```bash
 npm install
-# or
-yarn install
 ```
 
-3. Set up environment variables:
+Then, run the development server:
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Deployment Options
+
+This project supports multiple deployment options for your dynamic Next.js application:
+
+### Quick Deployment with the Helper Script
+
+We've included a deployment helper script that simplifies the process:
+
+```bash
+# Make sure you're in the frontend directory
+cd frontend
+
+# Make the script executable (if needed)
+chmod +x deploy.sh
+
+# Deploy to Vercel (recommended)
+./deploy.sh vercel
+
+# Or deploy with Docker locally
+./deploy.sh docker
+
+# Or build and push a Docker image
+./deploy.sh docker-push
+
+# Show all options
+./deploy.sh help
+```
+
+### 1. Vercel (Recommended)
+
+Vercel is the company behind Next.js and provides excellent support for Next.js applications with dynamic content.
+
+```bash
+# Make sure you're in the frontend directory
+cd frontend
+
+# Install Vercel CLI if needed
+npm install -g vercel
+
+# Login and deploy
+vercel login
+vercel
+```
+
+### 2. Docker Deployment
+
+The project includes Docker support for containerized deployment:
+
+```bash
+# Make sure you're in the frontend directory
+cd frontend
+
+# Using Docker Compose
+docker-compose up -d
+
+# Or build and run manually
+docker build -t mammothon-frontend .
+docker run -p 3000:3000 mammothon-frontend
+```
+
+### 3. Other Platforms
+
+The project can also be deployed to:
+
+- Render
+- Railway
+- DigitalOcean App Platform
+- Any platform that supports Node.js or Docker
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+## CI/CD
+
+The project includes GitHub Actions workflows for continuous integration and deployment. See the `.github/workflows` directory for details.
+
+## Environment Variables
 
 Create a `.env.local` file in the root directory with the following variables:
 
 ```
-NEXT_PUBLIC_API_URL_DEVELOPMENT=http://localhost:8001/api
-NEXT_PUBLIC_API_URL_PRODUCTION=https://kind-gwenora-papajams-0ddff9e5.koyeb.app/api
+NEXT_PUBLIC_API_URL=https://your-api-url.com
 ```
 
-### Development
+## Learn More
 
-Run the development server:
+To learn more about the technologies used in this project:
 
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
-
-## Project Structure
-
-```
-nextjs-app/
-├── components/           # Reusable React components
-│   └── WalletConnect.tsx # Wallet connection component
-├── lib/                  # Utility functions and classes
-│   ├── agents.ts         # Agent class and initialization
-│   └── config.ts         # Configuration settings
-├── pages/                # Next.js pages
-│   ├── _app.tsx          # Custom App component
-│   └── index.tsx         # Home page
-├── public/               # Static assets
-│   └── images/           # Images and icons
-├── styles/               # CSS styles
-│   ├── globals.css       # Global styles
-│   └── Home.module.css   # Home page specific styles
-├── next.config.js        # Next.js configuration
-├── package.json          # Project dependencies
-└── tsconfig.json         # TypeScript configuration
-```
-
-## API Integration
-
-The frontend communicates with the backend API for agent interactions. The API base URL is configured in `lib/config.ts` and automatically switches between development and production environments.
-
-## Wallet Integration
-
-Wallet integration is prepared but not fully implemented yet. The `WalletConnect` component provides a foundation for connecting to Ethereum wallets using libraries like ethers.js or web3.js.
-
-## Deployment
-
-The application can be deployed to Netlify, Vercel, or any other hosting service that supports Next.js applications.
-
-### Build for Production
-
-```bash
-npm run build
-# or
-yarn build
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://reactjs.org/docs)
+- [Vercel Platform](https://vercel.com/docs)
+- [Docker Documentation](https://docs.docker.com/)
 
 ## License
 
-MIT License
+This project is licensed under the terms of the license included in the repository.

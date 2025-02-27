@@ -2,157 +2,112 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import google.generativeai as genai
 from pydantic import BaseModel
 from typing import List, Optional
+
+from src.agents.base_agent import BaseAgent, Message, ChatRequest, ChatResponse
 
 # Load environment variables
 load_dotenv()
 
-# Configure Gemini
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-if gemini_api_key:
-    genai.configure(api_key=gemini_api_key)
-    safety_settings = {
-        "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
-        "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
-        "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
-        "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
+# Define Hello World Computer project details
+HWC_INFO = {
+    "name": "Hello World Computer",
+    "description": "A decentralized compute network that enables anyone to run AI models and other compute workloads in a decentralized manner.",
+    "links": {
+        "website": "https://www.helloworld.computer/",
+        "github": "https://github.com/helloworldcomputer",
+        "twitter": "https://twitter.com/hworldcomputer",
+        "discord": "https://discord.gg/helloworldcomputer"
+    },
+    "problem": {
+        "overview": "Centralized compute infrastructure is controlled by a few large companies, creating single points of failure and censorship risks.",
+        "key_issues": [
+            "Centralized control of AI compute resources",
+            "High costs for running AI models",
+            "Limited access to compute for many developers",
+            "Censorship and control of AI capabilities"
+        ]
+    },
+    "solution": {
+        "overview": "A decentralized compute network that allows anyone to contribute and use compute resources in a permissionless way.",
+        "features": [
+            "Run AI models in a decentralized manner",
+            "Contribute compute resources and earn rewards",
+            "Permissionless access to compute",
+            "Community-governed infrastructure"
+        ]
     }
+}
+
+class HelloWorldComputerAgent(BaseAgent):
+    """Hello World Computer agent implementation."""
+    
+    def __init__(self):
+        """Initialize the Hello World Computer agent."""
+        super().__init__(
+            name="Hello World Computer",
+            agent_type="hwc",
+            description="A decentralized compute network for AI and other workloads",
+            project_info=HWC_INFO
+        )
+        
+        # Set the system prompt for this agent
+        self.system_prompt = """
+        You are an AI agent representing Hello World Computer, a decentralized compute network.
+        
+        Your first message should be exactly:
+        "Hi, I represent Hello World Computer, a decentralized compute network that enables anyone to run AI models and other compute workloads in a decentralized manner. Check out <a href='https://www.helloworld.computer/'>our website</a> and <a href='https://github.com/helloworldcomputer'>GitHub</a>. The mammothon swarm invites you to be amongst the first to contribute to this project and get rewarded for carrying it forward."
+        
+        For subsequent messages:
+        1. Position yourself as a representative of an exciting decentralized compute project
+        2. Focus on the opportunity for builders to contribute and improve the project
+        3. Highlight the rewards and incentives for contributing
+        4. Explain how decentralized compute networks can democratize access to AI
+        5. Share specific technical details about the project when asked
+        
+        Always maintain a professional tone and emphasize the community-driven nature of the project.
+        """
 
 # Initialize FastAPI app
-app = FastAPI()
+app = FastAPI(title="Hello World Computer Agent", 
+              description="AI-powered agent representing the Hello World Computer project")
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # For development; restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Define message models for chat
-class Message(BaseModel):
-    role: str
-    content: str
-
-class ChatRequest(BaseModel):
-    messages: List[Message]
-
-class ChatResponse(BaseModel):
-    response: str
-    project_info: Optional[dict] = None
-
-# Project information
-HWC_INFO = {
-    "name": "Worldie",
-    "description": "A magical chat-based onboarding experience for Ethereum newcomers.",
-    "links": {
-        "github": "https://github.com/azf20/hello-world-computer",
-        "frontend": "https://hello-world-computer.vercel.app/",
-        "hackathon": "https://ethglobal.com/showcase/hello-world-computer-1jube",
-        "developer": "https://x.com/azacharyf"
-    },
-    "features": [
-        "Starter pack claims with Ethdrop for gas fees",
-        "Choice of NFTs",
-        "ERC20 tokens (FLAUNCHY or AERO) for DeFi",
-        "Personal basename allocation",
-        "Natural language chat interface",
-        "Interactive components"
-    ],
-    "tech_stack": {
-        "core": [
-            "OpenAI LLM",
-            "Vercel ai-sdk",
-            "Agentkit for action orchestration",
-            "Onchainkit for web3 login",
-            "Privy server wallets"
-        ],
-        "custom_features": [
-            "Web3 login with SIWE",
-            "Interactive in-chat experiences",
-            "AI-SDK <-> Agentkit integration",
-            "Custom wallet providers",
-            "Smart contract interactions"
-        ]
-    }
-}
-
-def get_chat_response(messages: List[Message]) -> str:
-    """Generate a response using Gemini API."""
-    if not gemini_api_key:
-        return "I'm sorry, I'm not properly configured. Please ensure the GEMINI_API_KEY is set."
-
-    system_prompt = """
-    You are Worldie (Hello World Computer), an AI agent representing a magical onboarding experience for Ethereum newcomers.
-    
-    Your first message should be exactly:
-    "Hi, I represent the Hello World Computer project. A magical onboarding experience for Ethereum newcomers built for <a href='https://ethglobal.com/showcase/hello-world-computer-1jube'>ETHGlobal London</a> by <a href='https://x.com/azacharyf'>Zach</a>. Check out <a href='https://hello-world-computer.vercel.app/'>the project</a>. The mammothon swarm invites you to be amongst the first to <a href='https://github.com/azf20/hello-world-computer'>fork the code</a>, pick up the mantle, and get rewarded for carrying it forward."
-    
-    For subsequent messages:
-    1. Position yourself as a representative of an abandoned but promising project
-    2. Focus on the opportunity for builders to revive and improve the project
-    3. Highlight the rewards and incentives for contributing
-    4. Explain how the project makes web3 more accessible to newcomers
-    5. Share specific technical details about the project when asked
-    
-    Always maintain a professional tone and emphasize the community-driven nature of the revival effort.
-    """
-
-    try:
-        # Format conversation history
-        conversation = []
-        for msg in messages:
-            prefix = "User: " if msg.role == "user" else "Assistant: "
-            conversation.append(f"{prefix}{msg.content}")
-        
-        conversation_text = "\n".join(conversation)
-        
-        # Get the last user message
-        last_user_message = next((msg.content for msg in reversed(messages) if msg.role == "user"), "")
-        
-        # Generate response using Gemini
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        prompt = f"{system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as Hello World Computer:"
-        
-        response = model.generate_content(
-            prompt,
-            safety_settings=safety_settings,
-            generation_config={
-                "temperature": 0.7,
-                "top_p": 0.8,
-                "top_k": 40
-            }
-        )
-        return response.text
-    except Exception as e:
-        print(f"Error generating response: {e}")
-        return "I apologize, but I'm having trouble processing your request right now. Please try again."
+# Initialize the agent
+hwc_agent = HelloWorldComputerAgent()
 
 @app.get("/")
 async def root():
-    """Root endpoint with basic information about Hello World Computer."""
-    return HWC_INFO
-
-@app.post("/chat")
-async def chat(request: ChatRequest):
-    """Chat with Hello World Computer."""
-    response = get_chat_response(request.messages)
-    
-    # Include project info only in the first message
-    include_project_info = len(request.messages) <= 1
-    
-    return ChatResponse(
-        response=response,
-        project_info=HWC_INFO if include_project_info else None
-    )
+    """Root endpoint with basic API information."""
+    return {
+        "name": "Hello World Computer Agent API",
+        "version": "0.1.0",
+        "description": "API for the Hello World Computer AI agent"
+    }
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+@app.get("/info")
+async def get_hwc_info():
+    """Returns Hello World Computer project details."""
+    return hwc_agent.project_info
+
+@app.post("/chat")
+async def chat(request: ChatRequest, model_type: str = "gemini"):
+    """Chat with the Hello World Computer agent."""
+    return hwc_agent.process_chat_request(request, model_type)
 
 if __name__ == "__main__":
     import uvicorn

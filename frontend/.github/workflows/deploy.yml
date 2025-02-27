@@ -1,0 +1,99 @@
+name: Deploy Next.js App
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "frontend/**" # Only trigger on changes to the frontend directory
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "frontend/**" # Only trigger on changes to the frontend directory
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: frontend/.next
+          retention-days: 1
+
+  deploy-vercel:
+    needs: build-and-test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: frontend/.next
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: frontend # Specify the frontend directory
+          vercel-args: "--prod"
+
+  # Uncomment and configure one of these deployment options as needed
+
+  # deploy-docker:
+  #   needs: build-and-test
+  #   if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v2
+  #
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v2
+  #       with:
+  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
+  #
+  #     - name: Build and push
+  #       uses: docker/build-push-action@v4
+  #       with:
+  #         context: ./frontend  # Specify the frontend directory
+  #         push: true
+  #         tags: yourusername/mammothon-frontend:latest
+
+  # deploy-render:
+  #   needs: build-and-test
+  #   if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - name: Deploy to Render
+  #       run: |
+  #         curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}

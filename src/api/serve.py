@@ -59,7 +59,7 @@ def import_agent_module(agent_name):
         return None
 
 # List of available agents
-AVAILABLE_AGENTS = ["vocafi", "mammothon"]
+AVAILABLE_AGENTS = ["vocafi", "wooly", "clarity", "hwc", "mammothon"]
 
 # Mount each agent's API
 for agent_name in AVAILABLE_AGENTS:
@@ -75,19 +75,29 @@ for agent_name in AVAILABLE_AGENTS:
 async def list_agents():
     """List all available agents."""
     agents = []
+    
+    # Map of agent names to their instance variable names
+    agent_instance_names = {
+        "vocafi": "vocafi_agent",
+        "wooly": "wooly_agent",
+        "clarity": "clarity_agent",
+        "hwc": "hwc_agent",
+        "mammothon": "mammothon_agent"
+    }
+    
     for agent_name in AVAILABLE_AGENTS:
         try:
             # Import the agent module to get its info
             module_path = f"src.agents.{agent_name}_agent"
-            module = __import__(module_path, fromlist=[f'{agent_name}_agent'])
+            module = __import__(module_path, fromlist=[agent_instance_names[agent_name]])
             
-            # Get the agent instance
-            agent_instance = getattr(module, f"{agent_name}_agent")
+            # Get the agent instance using the correct variable name
+            agent_instance = getattr(module, agent_instance_names[agent_name])
             
             # Add agent info to the list
             agents.append({
                 "name": agent_instance.name,
-                "type": agent_instance.agent_type,
+                "type": agent_instance.type,
                 "description": agent_instance.description,
                 "endpoint": f"/agents/{agent_name}",
                 "project_info": agent_instance.project_info
@@ -126,4 +136,5 @@ async def not_found_handler(request: Request, exc: HTTPException):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000) 
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run(app, host="0.0.0.0", port=port) 

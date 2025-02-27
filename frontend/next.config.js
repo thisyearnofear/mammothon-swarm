@@ -41,7 +41,6 @@ const nextConfig = {
   },
   experimental: {
     esmExternals: "loose",
-    externalDir: true,
   },
   // Configure API proxy for development
   async rewrites() {
@@ -57,9 +56,20 @@ const nextConfig = {
   },
   // Ensure images from external sources can be optimized
   images: {
-    domains: ["kind-gwenora-papajams-0ddff9e5.koyeb.app"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "kind-gwenora-papajams-0ddff9e5.koyeb.app",
+        port: "",
+        pathname: "/**",
+      },
+    ],
     unoptimized: process.env.NODE_ENV === "development",
   },
+  // Disable the custom server for Vercel deployment
+  distDir: ".next",
+  // Enable standalone output for Docker deployment
+  output: "standalone",
 };
 
 module.exports = nextConfig;

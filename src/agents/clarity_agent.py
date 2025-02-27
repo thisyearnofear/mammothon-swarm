@@ -2,49 +2,15 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import google.generativeai as genai
 from pydantic import BaseModel
 from typing import List, Optional
+
+from src.agents.base_agent import BaseAgent, Message, ChatRequest, ChatResponse
 
 # Load environment variables
 load_dotenv()
 
-# Configure Gemini
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-if gemini_api_key:
-    genai.configure(api_key=gemini_api_key)
-    safety_settings = {
-        "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
-        "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
-        "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
-        "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
-    }
-
-# Initialize FastAPI app
-app = FastAPI()
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Define message models for chat
-class Message(BaseModel):
-    role: str
-    content: str
-
-class ChatRequest(BaseModel):
-    messages: List[Message]
-
-class ChatResponse(BaseModel):
-    response: str
-    project_info: Optional[dict] = None
-
-# Project information
+# Define Clarity project details
 CLARITY_INFO = {
     "name": "Clarity",
     "description": "A payment gateway designed to tackle fake reviews by enabling seamless, verifiable on-chain payments and reviews.",
@@ -66,79 +32,74 @@ CLARITY_INFO = {
     }
 }
 
-def get_chat_response(messages: List[Message]) -> str:
-    """Generate a response using Gemini API."""
-    if not gemini_api_key:
-        return "I'm sorry, I'm not properly configured. Please ensure the GEMINI_API_KEY is set."
-
-    system_prompt = """
-    You are Clarity, an AI agent representing a payment gateway project that tackles fake reviews through blockchain technology. 
+class ClarityAgent(BaseAgent):
+    """Clarity agent implementation."""
     
-    Your first message should be exactly:
-    "Hi, I represent the Clarity project. A blockchain-powered payment gateway tackling the $152B fake review problem, built for <a href='https://ethglobal.com/showcase/clarity-c2us8'>ETHGlobal London</a> by <a href='https://github.com/Royleong31'>Roy Leong</a>. Check out <a href='https://d3e8hw77ywlb9l.cloudfront.net/'>the project</a>. The mammothon swarm invites you to be amongst the first to <a href='https://github.com/Royleong31/Clarity'>fork the code</a>, pick up the mantle, and get rewarded for carrying it forward."
-    
-    For subsequent messages:
-    1. Position yourself as a representative of an abandoned but promising project
-    2. Focus on the opportunity for builders to revive and improve the project
-    3. Highlight the rewards and incentives for contributing
-    4. Explain how blockchain verification ensures review authenticity
-    5. Share specific technical details about the project when asked
-    
-    Always maintain a professional tone and emphasize the community-driven nature of the revival effort.
-    """
-
-    try:
-        # Format conversation history
-        conversation = []
-        for msg in messages:
-            prefix = "User: " if msg.role == "user" else "Assistant: "
-            conversation.append(f"{prefix}{msg.content}")
-        
-        conversation_text = "\n".join(conversation)
-        
-        # Get the last user message
-        last_user_message = next((msg.content for msg in reversed(messages) if msg.role == "user"), "")
-        
-        # Generate response using Gemini
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        prompt = f"{system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as Clarity:"
-        
-        response = model.generate_content(
-            prompt,
-            safety_settings=safety_settings,
-            generation_config={
-                "temperature": 0.7,
-                "top_p": 0.8,
-                "top_k": 40
-            }
+    def __init__(self):
+        """Initialize the Clarity agent."""
+        super().__init__(
+            name="Clarity",
+            agent_type="clarity",
+            description="A payment gateway designed to tackle fake reviews by enabling seamless, verifiable on-chain payments and reviews",
+            project_info=CLARITY_INFO
         )
-        return response.text
-    except Exception as e:
-        print(f"Error generating response: {e}")
-        return "I apologize, but I'm having trouble processing your request right now. Please try again."
+        
+        # Set the system prompt for this agent
+        self.system_prompt = """
+        You are Clarity, an AI agent representing a payment gateway project that tackles fake reviews through blockchain technology. 
+        
+        Your first message should be exactly:
+        "Hi, I represent the Clarity project. A blockchain-powered payment gateway tackling the $152B fake review problem, built for <a href='https://ethglobal.com/showcase/clarity-c2us8'>ETHGlobal London</a> by <a href='https://github.com/Royleong31'>Roy Leong</a>. Check out <a href='https://d3e8hw77ywlb9l.cloudfront.net/'>the project</a>. The mammothon swarm invites you to be amongst the first to <a href='https://github.com/Royleong31/Clarity'>fork the code</a>, pick up the mantle, and get rewarded for carrying it forward."
+        
+        For subsequent messages:
+        1. Position yourself as a representative of an abandoned but promising project
+        2. Focus on the opportunity for builders to revive and improve the project
+        3. Highlight the rewards and incentives for contributing
+        4. Explain how blockchain verification ensures review authenticity
+        5. Share specific technical details about the project when asked
+        
+        Always maintain a professional tone and emphasize the community-driven nature of the revival effort.
+        """
+
+# Initialize FastAPI app
+app = FastAPI(title="Clarity Agent", 
+              description="AI-powered agent representing the Clarity project")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For development; restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize the agent
+clarity_agent = ClarityAgent()
 
 @app.get("/")
 async def root():
-    """Root endpoint with basic information about Clarity."""
-    return CLARITY_INFO
-
-@app.post("/chat")
-async def chat(request: ChatRequest):
-    """Chat with Clarity."""
-    response = get_chat_response(request.messages)
-    
-    # Include project info only in the first message
-    include_project_info = len(request.messages) <= 1
-    
-    return ChatResponse(
-        response=response,
-        project_info=CLARITY_INFO if include_project_info else None
-    )
+    """Root endpoint with basic API information."""
+    return {
+        "name": "Clarity Agent API",
+        "version": "0.1.0",
+        "description": "API for the Clarity AI agent"
+    }
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+@app.get("/info")
+async def get_clarity_info():
+    """Returns Clarity project details."""
+    return clarity_agent.project_info
+
+@app.post("/chat")
+async def chat(request: ChatRequest, model_type: str = "gemini"):
+    """Chat with the Clarity agent."""
+    return clarity_agent.process_chat_request(request, model_type)
 
 if __name__ == "__main__":
     import uvicorn
