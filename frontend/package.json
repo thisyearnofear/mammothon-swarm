@@ -3,15 +3,19 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "dev": "node server.js",
+        "dev": "next dev",
         "build": "next build",
-        "start": "NODE_ENV=production node server.js"
+        "start": "next start"
     },
     "_moduleAliases": {
         "@": ".",
         "lib": "src/lib"
     },
     "dependencies": {
+        "@babel/core": "^7.24.0",
+        "@babel/preset-env": "^7.24.0",
+        "@babel/preset-react": "^7.23.3",
+        "@babel/preset-typescript": "^7.23.3",
         "@babel/runtime": "^7.24.0",
         "@netlify/functions": "^3.0.0",
         "babel-plugin-module-resolver": "^5.0.0",
