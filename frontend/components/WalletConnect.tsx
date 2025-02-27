@@ -1,6 +1,22 @@
 import { useState, useEffect } from "react";
-import { BrowserProvider } from "ethers";
 import { WALLET_CONNECT_ID } from "../lib/wallet-config";
+
+// Dynamically import ethers to prevent build errors
+let BrowserProvider: any;
+try {
+  // Only import in browser environment
+  if (typeof window !== "undefined") {
+    import("ethers")
+      .then((ethers) => {
+        BrowserProvider = ethers.BrowserProvider;
+      })
+      .catch((err) => {
+        console.warn("Failed to load ethers library:", err);
+      });
+  }
+} catch (error) {
+  console.warn("Error importing ethers:", error);
+}
 
 interface WalletConnectProps {
   onConnect: (address: string) => void;
@@ -13,16 +29,32 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 }) => {
   const [address, setAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [ethersAvailable, setEthersAvailable] = useState(false);
 
-  // Log the wallet connect ID for debugging
+  // Check if ethers and ethereum are available
   useEffect(() => {
-    console.log("Wallet Connect ID:", WALLET_CONNECT_ID);
+    const checkDependencies = async () => {
+      if (typeof window !== "undefined" && window.ethereum && BrowserProvider) {
+        setEthersAvailable(true);
+        console.log("Wallet Connect ID:", WALLET_CONNECT_ID);
+      } else {
+        console.warn("Ethereum provider or ethers library not available");
+        setEthersAvailable(false);
+      }
+    };
+
+    checkDependencies();
   }, []);
 
   // Check if wallet is already connected on component mount
   useEffect(() => {
     const checkConnection = async () => {
-      if (typeof window === "undefined" || !window.ethereum) {
+      if (
+        !ethersAvailable ||
+        typeof window === "undefined" ||
+        !window.ethereum ||
+        !BrowserProvider
+      ) {
         return;
       }
 
@@ -42,10 +74,15 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     };
 
     checkConnection();
-  }, [onConnect]);
+  }, [onConnect, ethersAvailable]);
 
   const connectWallet = async () => {
-    if (typeof window === "undefined" || !window.ethereum) {
+    if (
+      !ethersAvailable ||
+      typeof window === "undefined" ||
+      !window.ethereum ||
+      !BrowserProvider
+    ) {
       alert("Please install MetaMask or another Ethereum wallet to connect");
       return;
     }
@@ -73,6 +110,17 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     setAddress(null);
     onDisconnect();
   };
+
+  // If ethers is not available, show a simplified button
+  if (!ethersAvailable) {
+    return (
+      <div className="wallet-connect">
+        <button className="connect-button disabled" disabled>
+          Wallet Not Available
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="wallet-connect">

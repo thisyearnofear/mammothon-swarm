@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "npm run build"
+  command = "npm install && npm run build"
   publish = ".next"
 
 # Redirects and headers are CRITICAL for SPAs to work correctly
