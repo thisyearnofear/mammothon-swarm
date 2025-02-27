@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const path = require("path");
+
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
@@ -19,6 +21,13 @@ const nextConfig = {
       path: false,
       os: false,
     };
+
+    // Add lib directory to module resolution
+    config.resolve.modules = [
+      path.resolve(__dirname),
+      path.resolve(__dirname, "lib"),
+      "node_modules",
+    ];
 
     return config;
   },

@@ -16,7 +16,8 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "lib/*": ["lib/*"]
     },
     "typeRoots": ["./node_modules/@types", "./types"]
   },
