@@ -19,13 +19,25 @@ gemini_api_key = os.getenv("GEMINI_API_KEY")
 # Configure Gemini
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
-    # Set default safety settings
-    safety_settings = {
-        "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
-        "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
-        "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
-        "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
-    }
+    # Set default safety settings for Gemini
+    safety_settings = [
+        {
+            "category": "HARM_CATEGORY_HARASSMENT",
+            "threshold": "BLOCK_NONE"
+        },
+        {
+            "category": "HARM_CATEGORY_HATE_SPEECH",
+            "threshold": "BLOCK_NONE"
+        },
+        {
+            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "threshold": "BLOCK_NONE"
+        },
+        {
+            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+            "threshold": "BLOCK_NONE"
+        }
+    ]
 
 # Define message models for chat
 class Message(BaseModel):
@@ -89,7 +101,7 @@ class BaseAgent:
         
         if model_type == "openai" and openai_api_key:
             try:
-                model = ChatOpenAI(api_key=openai_api_key, model="gpt-4o-mini")
+                model = ChatOpenAI(api_key=openai_api_key, model="gpt-4")
                 messages_for_model = [
                     SystemMessage(content=self.system_prompt),
                     HumanMessage(content=f"Conversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as the {self.name} agent:")
@@ -108,16 +120,28 @@ class BaseAgent:
             try:
                 model = genai.GenerativeModel('gemini-1.5-pro')
                 prompt = f"{self.system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as the {self.name} agent:"
-                response = model.generate_content(
-                    prompt,
-                    safety_settings=safety_settings,
-                    generation_config={
-                        "temperature": 0.7,
-                        "top_p": 0.8,
-                        "top_k": 40
-                    }
-                )
-                return response.text
+                
+                # Add error handling for the response
+                try:
+                    response = model.generate_content(
+                        prompt,
+                        safety_settings=safety_settings,
+                        generation_config={
+                            "temperature": 0.7,
+                            "top_p": 0.8,
+                            "top_k": 40
+                        }
+                    )
+                    
+                    if not response.text:
+                        print("Empty response from Gemini")
+                        return "I'm sorry, I received an empty response. Please try again."
+                        
+                    return response.text
+                except Exception as content_error:
+                    print(f"Gemini content generation error: {content_error}")
+                    return "I'm sorry, I had trouble generating a response. Please try again."
+                    
             except Exception as e:
                 print(f"Gemini error: {e}")
                 return "I'm sorry, I'm having trouble connecting to my AI services right now. Please try again later."
