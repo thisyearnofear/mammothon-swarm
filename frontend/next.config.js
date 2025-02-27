@@ -3,7 +3,7 @@ const path = require("path");
 
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: false,
+  swcMinify: true,
   eslint: {
     // Disable ESLint during production builds to prevent failures
     ignoreDuringBuilds: true,
