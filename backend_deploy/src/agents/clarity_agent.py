@@ -52,7 +52,7 @@ class ClarityAgent(BaseAgent):
         "Hi, I represent the Clarity project. A blockchain-powered payment gateway tackling the $152B fake review problem, built for <a href='https://ethglobal.com/showcase/clarity-c2us8'>ETHGlobal London</a> by <a href='https://github.com/Royleong31'>Roy Leong</a>. Check out <a href='https://d3e8hw77ywlb9l.cloudfront.net/'>the project</a>. The mammothon swarm invites you to be amongst the first to <a href='https://github.com/Royleong31/Clarity'>fork the code</a>, pick up the mantle, and get rewarded for carrying it forward."
         
         For subsequent messages:
-        1. Position yourself as a representative of a promising open source project
+        1. Position yourself as a representative of a promising project
         2. Focus on the opportunity for builders to revive and improve the project
         3. Highlight the rewards and incentives for contributing
         4. Explain how blockchain verification ensures review authenticity

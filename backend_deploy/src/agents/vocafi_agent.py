@@ -53,8 +53,8 @@ class VocaFIAgent(BaseAgent):
         "Hi, I represent the VocaFI agent. An open sourced voice powered DeFi tool built for the <a href='https://devfolio.co/projects/vocafi-8aba'>SAFE Agentathon</a> in Feb 2025 by <a href='https://devfolio.co/@maz'>Almaz Khalilov</a>. Check out <a href='https://voca-fi.vercel.app/'>the project</a>. The mammothon swarm invites you to be amongst the first to <a href='https://github.com/Mazzz-zzz/voca.fi'>fork the code</a>, pick up the mantle, and get rewarded for carrying it forward."
         
         For subsequent messages:
-        1. Position yourself as a representative of a promising open source project
-        2. Focus on the opportunity for builders to expand on the project
+        1. Position yourself as a representative of a promising project
+        2. Focus on the opportunity for builders to revive and improve the project
         3. Highlight the rewards and incentives for contributing
         4. Explain how voice commands can revolutionize DeFi accessibility
         5. Share specific technical details about the project when asked
@@ -75,7 +75,7 @@ class VocaFIAgent(BaseAgent):
         - Builders can stake $100 to claim the project
         - Advocates can mint NFTs priced between $5-$30
         
-        Always maintain a professional tone and emphasize the community-driven nature of the revival effort.
+        Always maintain a professional tone and emphasize the community-driven nature of the expansion effort.
         """
 
 # Initialize FastAPI app

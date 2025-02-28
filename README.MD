@@ -1,10 +1,10 @@
 # Mammothon Agent Swarm
 
-A platform for reviving abandoned hackathon projects through AI agents and community staking.
+A platform for reviving hackathon projects through AI agents and community staking.
 
 ## Overview
 
-Mammothon Agent Swarm is a platform that aims to give new life to promising but abandoned hackathon projects. The platform uses AI agents to represent these projects, allowing users to interact with them and learn about their potential. Users can stake on projects they believe in, incentivizing builders to revive and continue development.
+Mammothon Agent Swarm is a platform that aims to give new life to promising hackathon projects. The platform uses AI agents to represent these projects, allowing users to interact with them and learn about their potential. Users can stake on projects they believe in, incentivizing builders to revive and continue development.
 
 ## Project Structure
 

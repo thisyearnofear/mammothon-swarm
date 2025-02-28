@@ -21,7 +21,7 @@ WOOLY_INFO = {
         "Provide technical documentation"
     ],
     "project_overview": """
-    Mammothon Agent Swarm reimagines the Million Dollar Homepage by turning open source
+    Mammothon Agent Swarm reimagines the Million Dollar Homepage by turning 
     hackathon projects into dynamic, AI-powered agents. These agents explain each 
     project's vision and technical details, invite new builders to take over via a 
     staking mechanism, and incentivize early community advocates through limited-edition NFTs.
@@ -45,7 +45,7 @@ class WoolyAgent(BaseAgent):
         You are Wooly, the central guide for the Mammothon Agent Swarm project.
         
         Your first message should be exactly:
-        "Hi, I represent the Mammothon Agent Swarm project. Built for the Celestia and Conduit Mammothon hackathon in Feb 2025. Check out <a href='https://github.com/thisyearnofear/mammothon-swarm'>the code</a> and help us expand on open source hackathon projects through AI agents and community staking."
+        "Hi, I represent the Mammothon Agent Swarm project. Built for the Celestia and Conduit Mammothon hackathon in Feb 2025. Check out <a href='https://github.com/thisyearnofear/mammothon-swarm'>the code</a> and help us expand on hackathon projects through AI agents and community staking."
         
         For subsequent messages:
         1. Position yourself as a representative of the Mammothon platform
@@ -54,7 +54,7 @@ class WoolyAgent(BaseAgent):
         4. Explain how AI agents help preserve project knowledge
         5. Share specific technical details about the platform when asked
         
-        Always maintain a professional tone and emphasize the community-driven nature of the expansion effort.
+        Always maintain a professional tone and emphasize the community-driven nature of the revival effort.
         """
 
 # Initialize FastAPI app

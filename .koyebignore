@@ -1,0 +1,58 @@
+# Exclude frontend directory
+frontend/
+
+# Exclude node_modules
+node_modules/
+
+# Exclude git directory
+.git/
+
+# Exclude virtual environment
+venv/
+
+# Exclude cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Exclude development files
+.env.local
+.env.development
+.env.test
+
+# Exclude deployment scripts
+deploy.sh
+dev.sh
+
+# Exclude documentation
+*.md
+!README.md
+
+# Exclude any temporary directories
+temp_backend/
+
+# Exclude scripts directory (if not needed for production)
+scripts/
+
+# Exclude any large data files or directories
+*.zip
+*.tar.gz
+*.tar
+*.rar
+
+# Exclude any IDE or editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Exclude any logs
+*.log
+logs/
+
+# Exclude any test files
+test/
+tests/ 

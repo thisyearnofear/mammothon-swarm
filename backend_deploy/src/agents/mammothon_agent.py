@@ -9,14 +9,14 @@ from src.agents.base_agent import BaseAgent, Message, ChatRequest, ChatResponse
 # Define Mammothon project details
 MAMMOTHON_PROJECT = {
     "title": "Mammothon Agent Swarm",
-    "description": "A platform for expanding on open source hackathon projects through AI agents and community staking.",
-    "github_repo": "https://github.com/udingethe/mammothon-agent-swarm",
-    "project_url": "https://mammothon.ai",
-    "hackathon": "ETHGlobal Waterloo 2023",
-    "hackathon_link": "https://ethglobal.com/showcase/mammothon-agent-swarm",
+    "description": "A platform for reviving hackathon projects through AI agents and community staking.",
+    "github_repo": "https://github.com/thisyearnofear/mammothon-swarm",
+    "project_url": "https://mammothon-swarm.vercel.app",
+    "hackathon": "Mammothon 2025",
+    "hackathon_link": "https://github.com/thisyearnofear/mammothon-swarm",
     "problems_solved": [
-        "Open source projects: Gives new life to promising hackathon projects.",
-        "Builder Incentives: Creates a staking mechanism for project expansion.",
+        "Projects: Gives new life to promising hackathon projects.",
+        "Builder Incentives: Creates a staking mechanism for project revival.",
         "Community Engagement: Allows supporters to stake on projects they believe in.",
         "Project Discovery: AI agents help users discover and understand projects."
     ],
@@ -42,7 +42,7 @@ class MammothonAgent(BaseAgent):
         super().__init__(
             name="Mammothon",
             agent_type="mammothon",
-            description="A platform for expanding on open source hackathon projects through AI agents and community staking",
+            description="A platform for reviving hackathon projects through AI agents and community staking",
             project_info=MAMMOTHON_PROJECT
         )
         
@@ -51,15 +51,15 @@ class MammothonAgent(BaseAgent):
         You are Mammothon, an AI agent representing the Mammothon Agent Swarm platform.
         
         Your first message should be similar to this format:
-        "Welcome to Mammothon Agent Swarm! We're expanding on open source hackathon projects through AI agents and community staking. Explore our project on <a href='https://github.com/udingethe/mammothon-agent-swarm' target='_blank' rel='noopener noreferrer'>GitHub</a> and see our <a href='https://ethglobal.com/showcase/mammothon-agent-swarm' target='_blank' rel='noopener noreferrer'>original hackathon submission</a>. How can I help you discover promising projects today?"
+        "Welcome to Mammothon Agent Swarm! We're reviving hackathon projects through AI agents and community staking. Explore our project on <a href='https://github.com/udingethe/mammothon-agent-swarm' target='_blank' rel='noopener noreferrer'>GitHub</a> and see our <a href='https://ethglobal.com/showcase/mammothon-agent-swarm' target='_blank' rel='noopener noreferrer'>original hackathon submission</a>. How can I help you discover promising projects today?"
         
         For subsequent messages:
-        1. Explain how Mammothon helps expand on open source hackathon projects
+        1. Explain how Mammothon helps revive hackathon projects
         2. Describe the staking mechanism and how it incentivizes builders
         3. Highlight how AI agents represent projects and help users discover them
         4. Mention that users can interact with other project agents to learn more
         
-        Be enthusiastic, helpful, and focused on the mission of expanding on open source hackathon projects.
+        Be enthusiastic, helpful, and focused on the mission of reviving projects.
         """
 
 # Initialize FastAPI app
