@@ -8,7 +8,7 @@ export default function Document() {
         <meta charSet="utf-8" />
         <meta
           name="description"
-          content="Mammothon Agent Swarm - A reimagining of the Million Dollar Homepage for abandoned hackathon projects"
+          content="Mammothon Agent Swarm - A reimagining of the Million Dollar Homepage for hackathon projects"
         />
         <meta name="theme-color" content="#6e48aa" />
         <link

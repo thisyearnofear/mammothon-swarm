@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
+import logger from "../src/lib/logger";
 
 // Define types inline to avoid import issues
 interface AgentConfig {
@@ -81,14 +82,17 @@ export default function Home() {
   useEffect(() => {
     const checkApiStatus = async () => {
       try {
+        logger.info(`Checking API status at ${apiBaseUrl}/health`);
         const response = await fetch(`${apiBaseUrl}/health`);
         if (response.ok) {
+          logger.info("API is online");
           setApiStatus("online");
         } else {
+          logger.warn(`API returned status ${response.status}`);
           setApiStatus("offline");
         }
       } catch (error) {
-        console.error("Error checking API status:", error);
+        logger.error("Error checking API status:", error);
         setApiStatus("offline");
       }
     };
@@ -106,7 +110,7 @@ export default function Home() {
       messageInputRef.current &&
       sendButtonRef.current
     ) {
-      console.log(`Setting up agent: ${activeAgent.config.id}`);
+      logger.info(`Setting up agent: ${activeAgent.config.id}`);
 
       // Set up the agent with the DOM elements
       activeAgent.setupElements(
@@ -116,9 +120,9 @@ export default function Home() {
       );
 
       // Initialize the chat
-      console.log(`Initializing chat for agent: ${activeAgent.config.id}`);
+      logger.info(`Initializing chat for agent: ${activeAgent.config.id}`);
       activeAgent.initializeChat().catch((error: unknown) => {
-        console.error("Error initializing chat:", error);
+        logger.error("Error initializing chat:", error);
         // Add error handling UI if needed
       });
     }
@@ -129,8 +133,8 @@ export default function Home() {
     if (!agentList[agentId] || !Agent) return;
 
     try {
-      console.log(`Creating agent: ${agentId}`);
-      console.log(`Agent class available: ${!!Agent}`);
+      logger.info(`Creating agent: ${agentId}`);
+      logger.debug(`Agent class available: ${!!Agent}`);
 
       const newAgent = new Agent({
         id: agentId,
@@ -139,16 +143,17 @@ export default function Home() {
         avatarUrl: agentList[agentId].avatar,
       });
 
-      console.log(`Agent created: ${agentId}`);
+      logger.info(`Agent created: ${agentId}`);
       setSelectedAgent(agentId);
       setActiveAgent(newAgent);
     } catch (error) {
-      console.error("Error creating agent:", error);
+      logger.error("Error creating agent:", error);
       alert("Could not initialize the agent. Please try again later.");
     }
   };
 
   const handleBack = () => {
+    logger.info("Navigating back to agent selection");
     setSelectedAgent(null);
     setActiveAgent(null);
   };
@@ -159,7 +164,7 @@ export default function Home() {
         <title>Mammothon Agent Swarm</title>
         <meta
           name="description"
-          content="AI agents for abandoned hackathon projects"
+          content="AI agents for expanding on hackathon projects"
         />
         <link rel="icon" href="/images/mammoth.png" />
         <link rel="apple-touch-icon" href="/images/mammoth.png" />
@@ -293,7 +298,7 @@ const useModules = () => {
     apiBaseUrl: string;
   }>({
     Agent: StubAgent,
-    apiBaseUrl: "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
+    apiBaseUrl: "https://mammothon-backend-papajams-d9d0dedd.koyeb.app",
   });
 
   useEffect(() => {
@@ -302,52 +307,55 @@ const useModules = () => {
 
     const loadModules = async () => {
       try {
-        console.log("Loading modules...");
+        logger.info("Loading modules...");
 
         // Use direct imports
         const agentsModule = { Agent: StubAgent };
         const configModule = {
-          apiBaseUrl: "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
+          apiBaseUrl: "https://mammothon-backend-papajams-d9d0dedd.koyeb.app",
         };
 
         // Try to load the real modules if possible
         try {
           if (typeof window !== "undefined") {
-            console.log("Attempting to dynamically import modules...");
+            logger.info("Attempting to dynamically import modules...");
 
             const [realAgentsModule, realConfigModule] = await Promise.all([
               import("../src/lib/agents").catch((e) => {
-                console.error("Failed to import agents module:", e);
+                logger.error("Failed to import agents module:", e);
                 return { Agent: StubAgent };
               }),
               import("../src/lib/config").catch((e) => {
-                console.error("Failed to import config module:", e);
+                logger.error("Failed to import config module:", e);
                 return {
                   apiBaseUrl:
-                    "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
+                    "https://mammothon-backend-papajams-d9d0dedd.koyeb.app",
                 };
               }),
             ]);
 
-            console.log("Dynamic imports completed");
-            console.log("Agents module loaded:", !!realAgentsModule.Agent);
-            console.log("Config module loaded:", !!realConfigModule.apiBaseUrl);
+            logger.info("Dynamic imports completed");
+            logger.debug("Agents module loaded:", !!realAgentsModule.Agent);
+            logger.debug(
+              "Config module loaded:",
+              !!realConfigModule.apiBaseUrl
+            );
 
             if (realAgentsModule.Agent) {
               // Cast to any to avoid type issues during build
               agentsModule.Agent = realAgentsModule.Agent as any;
-              console.log("Using real Agent class");
+              logger.info("Using real Agent class");
             } else {
-              console.log("Using stub Agent class");
+              logger.warn("Using stub Agent class");
             }
 
             if (realConfigModule.apiBaseUrl) {
               configModule.apiBaseUrl = realConfigModule.apiBaseUrl;
-              console.log("API Base URL:", configModule.apiBaseUrl);
+              logger.debug("API Base URL:", configModule.apiBaseUrl);
             }
           }
         } catch (e) {
-          console.error("Failed to load dynamic modules:", e);
+          logger.error("Failed to load dynamic modules:", e);
           // Continue with stub modules
         }
 
@@ -355,14 +363,14 @@ const useModules = () => {
           Agent: agentsModule.Agent as typeof StubAgent,
           apiBaseUrl:
             configModule.apiBaseUrl ||
-            "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
+            "https://mammothon-backend-papajams-d9d0dedd.koyeb.app",
         });
 
-        console.log("Modules loaded successfully");
-        console.log("Agent class available:", !!agentsModule.Agent);
-        console.log("API Base URL:", configModule.apiBaseUrl);
+        logger.info("Modules loaded successfully");
+        logger.debug("Agent class available:", !!agentsModule.Agent);
+        logger.debug("API Base URL:", configModule.apiBaseUrl);
       } catch (error: unknown) {
-        console.error("Failed to load modules:", error);
+        logger.error("Failed to load modules:", error);
         // Keep using the default stub modules
       }
     };

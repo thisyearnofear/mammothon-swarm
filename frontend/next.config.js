@@ -13,7 +13,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   // Avoid errors from missing modules
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     // Add polyfills and handle externals
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -37,6 +37,27 @@ const nextConfig = {
       lib: path.resolve(__dirname, "src/lib"),
       react: path.resolve(__dirname, "node_modules/react"),
     };
+
+    // Preserve console logs in production
+    if (!dev) {
+      // Find the TerserPlugin in the webpack config
+      const terserPluginIndex = config.optimization.minimizer.findIndex(
+        (minimizer) => minimizer.constructor.name === "TerserPlugin"
+      );
+
+      if (terserPluginIndex > -1) {
+        // Get the terser plugin instance
+        const terserPlugin = config.optimization.minimizer[terserPluginIndex];
+
+        // Modify the terser options to preserve console logs
+        if (terserPlugin.options && terserPlugin.options.terserOptions) {
+          terserPlugin.options.terserOptions.compress = {
+            ...terserPlugin.options.terserOptions.compress,
+            drop_console: false, // Preserve console.log
+          };
+        }
+      }
+    }
 
     return config;
   },

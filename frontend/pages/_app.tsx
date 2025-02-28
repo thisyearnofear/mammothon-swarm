@@ -2,6 +2,7 @@ import React from "react";
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { useEffect } from "react";
+import logger from "../src/lib/logger";
 
 // Define the rate limit handler type
 type RateLimitHandler = <T>(
@@ -20,7 +21,7 @@ declare global {
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    console.log("_app.tsx: App mounted");
+    logger.info("_app.tsx: App mounted");
 
     // Initialize rate limit handler
     if (typeof window !== "undefined") {
@@ -39,14 +40,14 @@ export default function App({ Component, pageProps }: AppProps) {
             if (!(response instanceof Response) || response.status !== 429) {
               return response;
             }
-            console.log(
+            logger.warn(
               `Rate limited, attempt ${retryCount + 1} of ${maxRetries}`
             );
           } catch (error) {
             if (error instanceof Error) {
-              console.error("Error in retry attempt:", error.message);
+              logger.error("Error in retry attempt:", error.message);
             } else {
-              console.error("Error in retry attempt:", error);
+              logger.error("Error in retry attempt:", error);
             }
           }
 
@@ -59,34 +60,37 @@ export default function App({ Component, pageProps }: AppProps) {
       };
 
       window.handleApiRateLimit = handler;
-      console.log("Rate limit handler initialized");
+      logger.info("Rate limit handler initialized");
     }
 
     return () => {
-      console.log("_app.tsx: App unmounted");
+      logger.info("_app.tsx: App unmounted");
     };
   }, []);
 
   useEffect(() => {
-    console.log("_app.tsx: Checking agent initialization");
+    logger.info("_app.tsx: Checking agent initialization");
     if (typeof window !== "undefined") {
-      console.log("_app.tsx: Window object exists");
+      logger.info("_app.tsx: Window object exists");
 
       // Check if agents are already initialized
       if (window.agentsInitialized) {
-        console.log("_app.tsx: Agents are already initialized!");
+        logger.info("_app.tsx: Agents are already initialized!");
       } else {
-        console.log("_app.tsx: Agents are NOT initialized!");
+        logger.info("_app.tsx: Agents are NOT initialized!");
 
         // Log DOM elements for debugging
-        console.log("_app.tsx: DOM elements for agents:");
-        console.log("vocafi-button:", document.getElementById("vocafi-button"));
-        console.log("wooly-button:", document.getElementById("wooly-button"));
-        console.log(
+        logger.debug("_app.tsx: DOM elements for agents:");
+        logger.debug(
+          "vocafi-button:",
+          document.getElementById("vocafi-button")
+        );
+        logger.debug("wooly-button:", document.getElementById("wooly-button"));
+        logger.debug(
           "clarity-button:",
           document.getElementById("clarity-button")
         );
-        console.log("hwc-button:", document.getElementById("hwc-button"));
+        logger.debug("hwc-button:", document.getElementById("hwc-button"));
       }
 
       // Set a flag to indicate that the app is ready for agent initialization
@@ -109,14 +113,14 @@ export default function App({ Component, pageProps }: AppProps) {
               if (!(response instanceof Response) || response.status !== 429) {
                 return response;
               }
-              console.log(
+              logger.warn(
                 `Rate limited, attempt ${retryCount + 1} of ${maxRetries}`
               );
             } catch (error) {
               if (error instanceof Error) {
-                console.error("Error in retry attempt:", error.message);
+                logger.error("Error in retry attempt:", error.message);
               } else {
-                console.error("Error in retry attempt:", error);
+                logger.error("Error in retry attempt:", error);
               }
             }
 
@@ -129,7 +133,7 @@ export default function App({ Component, pageProps }: AppProps) {
         };
 
         window.handleApiRateLimit = handler;
-        console.log("Rate limit handler initialized");
+        logger.info("Rate limit handler initialized");
       }
     }
   }, []);
