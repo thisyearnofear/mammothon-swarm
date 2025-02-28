@@ -5,6 +5,13 @@ from fastapi.responses import JSONResponse, RedirectResponse
 import importlib.util
 import sys
 
+# Import GitHub API router
+try:
+    from src.api.github_api import router as github_router
+except ImportError:
+    # Handle the case where the module might not exist yet
+    github_router = None
+
 # Create FastAPI app
 app = FastAPI(
     title="Mammothon Agent Swarm API",
@@ -25,6 +32,11 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["Content-Type", "X-Content-Type-Options"],
 )
+
+# Mount GitHub API router if available
+if github_router:
+    app.include_router(github_router)
+    print("Mounted GitHub API router")
 
 # Health check endpoint
 @app.get("/health")

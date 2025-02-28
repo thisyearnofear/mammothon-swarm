@@ -14,6 +14,7 @@
     "dependencies": {
         "@netlify/functions": "^3.0.0",
         "babel-plugin-module-resolver": "^5.0.0",
+        "ethers": "^5.7.2",
         "module-alias": "^2.2.3",
         "next": "^14.2.24",
         "react": "^18.3.1",

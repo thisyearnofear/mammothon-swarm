@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "../styles/Home.module.css";
 import logger from "../src/lib/logger";
 
@@ -195,25 +196,40 @@ export default function Home() {
         {apiStatus === "online" && (
           <div className={styles.content}>
             {!selectedAgent ? (
-              <div className={styles.agentGrid}>
-                {Object.entries(agentList).map(([id, agent]) => (
-                  <div key={id} className={styles.agentWrapper}>
-                    <button
-                      className={styles.agentButton}
-                      onClick={() => selectAgent(id)}
-                    >
-                      <Image
-                        src={agent.avatar}
-                        alt={agent.name}
-                        className={styles.agentAvatar}
-                        width={150}
-                        height={150}
-                      />
-                    </button>
-                    <span className={styles.agentLabel}>{agent.label}</span>
-                  </div>
-                ))}
-              </div>
+              <>
+                <h1 className={styles.welcomeTitle}>Mammothon Agent Swarm</h1>
+
+                <div className={styles.blockchainLinks}>
+                  <Link href="/projects" className={styles.blockchainLink}>
+                    <span className={styles.blockchainLinkIcon}>💰</span>
+                    Project Staking
+                  </Link>
+                  <Link href="/nfts" className={styles.blockchainLink}>
+                    <span className={styles.blockchainLinkIcon}>🏆</span>
+                    Builder NFTs
+                  </Link>
+                </div>
+
+                <div className={styles.agentGrid}>
+                  {Object.entries(agentList).map(([id, agent]) => (
+                    <div key={id} className={styles.agentWrapper}>
+                      <button
+                        className={styles.agentButton}
+                        onClick={() => selectAgent(id)}
+                      >
+                        <Image
+                          src={agent.avatar}
+                          alt={agent.name}
+                          className={styles.agentAvatar}
+                          width={150}
+                          height={150}
+                        />
+                      </button>
+                      <span className={styles.agentLabel}>{agent.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <div className={styles.chatContainer}>
                 <div className={styles.chatHeader}>

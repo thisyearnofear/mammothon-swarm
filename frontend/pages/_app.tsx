@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { useEffect } from "react";
+import { useRouter } from "next/router";
 import logger from "../src/lib/logger";
 
 // Define the rate limit handler type
@@ -20,6 +21,28 @@ declare global {
 }
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+  const [pageLoading, setPageLoading] = useState(false);
+
+  useEffect(() => {
+    const handleStart = () => {
+      setPageLoading(true);
+    };
+    const handleComplete = () => {
+      setPageLoading(false);
+    };
+
+    router.events.on("routeChangeStart", handleStart);
+    router.events.on("routeChangeComplete", handleComplete);
+    router.events.on("routeChangeError", handleComplete);
+
+    return () => {
+      router.events.off("routeChangeStart", handleStart);
+      router.events.off("routeChangeComplete", handleComplete);
+      router.events.off("routeChangeError", handleComplete);
+    };
+  }, [router]);
+
   useEffect(() => {
     logger.info("_app.tsx: App mounted");
 
@@ -138,5 +161,9 @@ export default function App({ Component, pageProps }: AppProps) {
     }
   }, []);
 
-  return <Component {...pageProps} />;
+  return (
+    <div className={`page-transition ${pageLoading ? "page-loading" : ""}`}>
+      <Component {...pageProps} />
+    </div>
+  );
 }

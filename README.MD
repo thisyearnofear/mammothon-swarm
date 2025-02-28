@@ -1,100 +1,207 @@
 # Mammothon Agent Swarm
 
-A platform for reviving hackathon projects through AI agents and community staking.
+A platform for reviving abandoned hackathon projects through AI agents and community staking.
 
 ## Overview
 
 Mammothon Agent Swarm is a platform that aims to give new life to promising hackathon projects. The platform uses AI agents to represent these projects, allowing users to interact with them and learn about their potential. Users can stake on projects they believe in, incentivizing builders to revive and continue development.
 
-## Project Structure
+A reimagining of the Million Dollar Homepage except instead of pixels, we have AI agents representing hackathon projects on the cusp of greatness. As builders commit to projects, and nudge them along, they gather momentum in the form of stakers & minters of their NFTs (who get access to the project and its potential over time). Our agents offer a marketing function as well as a way to track the progress of projects building on good ideas over time.
 
-```
-mammothon-agent-swarm/
-├── frontend/                # Next.js frontend application
-│   ├── lib/                 # Shared libraries
-│   ├── pages/               # Next.js pages
-│   ├── public/              # Static assets
-│   └── styles/              # CSS styles
-├── scripts/                 # Utility scripts
-│   ├── check-api.sh         # Script to check API status
-│   ├── cleanup.sh           # Script to clean up temporary files
-│   └── dev.sh               # Development startup script
-├── src/                     # Backend Python code
-│   ├── agents/              # Agent implementations
-│   │   ├── base_agent.py    # Base agent class
-│   │   ├── mammothon_agent.py # Mammothon agent
-│   │   └── vocafi_agent.py  # VocaFI agent
-│   └── api/                 # API endpoints
-│       └── serve.py         # FastAPI server
-└── dev.sh                   # Symbolic link to scripts/dev.sh
-```
+## How It Works (MVP)
 
-## Prerequisites
+- **The Homepage**: Five AI agents represent promising hackathon projects:
 
-- Python 3.9+
-- Node.js 18+
-- npm or yarn
+  - VocaFI - Voice-controlled DeFi trading with AI-powered chat assistance
+  - Clarity - A payment gateway designed to tackle fake reviews
+  - Hello World Computer - A decentralized compute network for AI workloads
+  - Mammothon - The platform itself
+  - Wooly - The guide to help users navigate the platform
 
-## Development
+- **Builder Selection**: It's trustless, builders can just fork code and start building.
+- **Git tracking**: If you want the agent to start tracking your fork, mint an NFT.
+- **NFT Creation**: An agent project can have many unique NFTs representing builders who've forked the project.
+- **Early Advocates**: Users can stake testnet ETH on Optimism on the project + builder NFTs.
+- **NFT staking** represents the ability to earn allocation in future token airdrop.
+- **Multiplier**: actions + time + the more staked = more allocation.
+- **Actions**: are set by the builder + project agent for community to undertake.
+- **Secondary Market**: opens once a month for one day.
+- **Value options**: remove stake = reimbursed ETH, lose rewards. Sell on secondary (along with rewards i.e. allocation earned). Keep for valhalla & help project succeed.
 
-To start the development environment:
+## Current Implementation
 
-```bash
-# Make the development script executable
-chmod +x dev.sh
+### Architecture
 
-# Run the development script
-./dev.sh
-```
+The project is implemented as a three-part system:
 
-This will:
+1. **Backend API (Python FastAPI)**
 
-1. Create a Python virtual environment if it doesn't exist
-2. Install Python dependencies
-3. Install frontend dependencies
-4. Start both the backend and frontend servers
+   - Deployed on Koyeb
+   - Provides agent communication via Google's Gemini API
+   - Exposes RESTful endpoints for agent interaction
+   - Modular design with base agent class and specific agent implementations
+   - GitHub activity tracking for projects
 
-## Available Scripts
+2. **Frontend (Next.js)**
 
-- `./dev.sh` - Start the development environment
-- `./scripts/check-api.sh` - Check if the API is running
-- `./scripts/cleanup.sh` - Clean up temporary files
+   - Deployed on Vercel
+   - Interactive UI for agent selection and chat
+   - Responsive design for mobile and desktop
+   - Real-time communication with backend API
+   - Web3 integration for blockchain features
 
-## Agent Architecture
+3. **Blockchain Components (Zora Testnet)**
+   - Smart contracts for NFT minting and project staking
+   - Builder NFTs to recognize project contributors
+   - Project staking mechanism for community support
+   - Deployed on Zora Sepolia testnet
 
-The project uses a modular agent architecture:
+### Live Deployment
 
-1. **Base Agent Class** (`src/agents/base_agent.py`): Provides common functionality for all agents, including:
+- **Frontend**: [https://mammothon-swarm.vercel.app](https://mammothon-swarm.vercel.app)
+- **Backend API**: [https://mammothon-backend-papajams-d9d0dedd.koyeb.app](https://mammothon-backend-papajams-d9d0dedd.koyeb.app)
+- **Smart Contracts (Zora Sepolia Testnet)**:
+  - Builder NFT: [0xfbe99dcd3b2d93b1c8ffabc26427383daaba05d1](https://explorer.sepolia.zora.energy/address/0xfbe99dcd3b2d93b1c8ffabc26427383daaba05d1)
+  - Project Staking: [0x8B62D610c83C42Ea8A8fC10F80581d9B7701cd37](https://explorer.sepolia.zora.energy/address/0x8B62D610c83C42Ea8A8fC10F80581d9B7701cd37)
 
-   - Chat message handling
-   - Model integration (OpenAI and Gemini)
-   - Project information management
-
-2. **Agent Implementations**:
-
-   - `VocaFIAgent` - Represents the VocaFI voice-controlled DeFi trading platform
-   - `MammothonAgent` - Represents the Mammothon Agent Swarm platform itself
-
-3. **Frontend Integration**:
-   - The frontend communicates with agents through a REST API
-   - Each agent has its own chat interface
-   - Messages support HTML formatting, including hyperlinks
-
-## API Endpoints
+### API Endpoints
 
 - `/health` - Health check endpoint
 - `/agents` - List all available agents
 - `/agents/{agent_name}` - Access a specific agent's API
 - `/agents/{agent_name}/chat` - Chat with a specific agent
+- `/github/projects` - List tracked GitHub projects
+- `/github/activity` - Get GitHub activity for all tracked projects
 
-## Deployment
+## Roadmap to Full MVP
 
-The application is designed to be deployed as two separate services:
+### Phase 1: Core Infrastructure (Completed)
 
-1. **Backend API** - Python FastAPI application
-2. **Frontend** - Next.js application
+- ✅ AI Agent implementation with Gemini API
+- ✅ Backend API deployment on Koyeb
+- ✅ Frontend deployment on Vercel
+- ✅ Agent chat functionality
+- ✅ GitHub activity tracking
 
-Both can be deployed to platforms like Vercel, Netlify, or any cloud provider.
+### Phase 2: Blockchain Integration (In Progress)
+
+- ✅ Deploy smart contracts on Zora Sepolia testnet
+  - ✅ Builder NFT contract for recognizing contributors
+  - ✅ Project staking contract for community support
+- ✅ Frontend integration with blockchain
+
+  - ✅ Web3 connection for wallet integration
+  - ✅ NFT ownership verification
+  - ✅ Project staking interface
+
+- [ ] Integrate Conduit for data indexing
+
+  - Track project forks and contributions
+  - Monitor community engagement
+  - Index on-chain activity related to projects
+
+- [ ] Add Celestia for decentralized data storage
+  - Store agent knowledge bases
+  - Maintain project metadata
+  - Enable decentralized content delivery
+
+### Phase 3: Staking and Rewards (Partially Implemented)
+
+- ✅ Deploy staking contracts on Zora Sepolia testnet
+- ✅ Create basic staking interface
+- [ ] Implement reward calculation based on project activity
+- [ ] Create a comprehensive dashboard for tracking stakes and rewards
+- [ ] Enable secondary market functionality
+
+### Phase 4: Community Features
+
+- [ ] Add project action tracking
+- [ ] Implement builder-community communication channels
+- [ ] Create leaderboards for projects and contributors
+- [ ] Develop analytics for project momentum
+
+## Blockchain Features
+
+### Builder NFTs
+
+Builder NFTs are ERC-721 tokens that represent contributions to projects in the Mammothon ecosystem. These NFTs serve as:
+
+- Recognition for valuable contributions to projects
+- Proof of participation in the ecosystem
+- Potential for future governance rights and rewards
+
+The BuilderNFT contract includes features such as:
+
+- Tracking GitHub usernames associated with NFTs
+- Mapping NFTs to specific projects
+- Preventing duplicate NFTs for the same contributor/project combination
+
+### Project Staking
+
+The Project Staking contract allows community members to stake ETH on projects they believe in. Features include:
+
+- Staking ETH on specific projects
+- Tracking total staked amount and number of stakers per project
+- Unstaking functionality with proper accounting
+- Project management by contract owner
+
+## Development Setup
+
+### Prerequisites
+
+- Python 3.9+
+- Node.js 18+
+- npm or yarn
+- Google Gemini API key
+- MetaMask or another Web3 wallet
+
+### Backend Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/udingethe/mammothon-agent-swarm.git
+cd mammothon-agent-swarm
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env to add your Gemini API key
+
+# Deploy to Koyeb (if you have Koyeb CLI installed)
+koyeb deploy backend_deploy mammothon-backend/backend-api --ports 8000:http --routes /:8000 --archive-builder docker --archive-docker-dockerfile Dockerfile.backend --env "GEMINI_API_KEY=your_key_here" --env "PORT=8000"
+```
+
+### Frontend Setup
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local to add your API and blockchain configuration
+
+# Run development server
+npm run dev
+
+# Deploy to Vercel (if you have Vercel CLI installed)
+vercel --prod
+```
+
+### Smart Contract Interaction
+
+To interact with the deployed smart contracts:
+
+1. Connect your wallet to the Zora Sepolia testnet
+2. Get some testnet ETH from a faucet
+3. Visit the Project Staking page to stake on projects
+4. Check the Builder NFTs page to view your NFTs
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 

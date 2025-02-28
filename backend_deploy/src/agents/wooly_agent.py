@@ -25,7 +25,21 @@ WOOLY_INFO = {
     hackathon projects into dynamic, AI-powered agents. These agents explain each 
     project's vision and technical details, invite new builders to take over via a 
     staking mechanism, and incentivize early community advocates through limited-edition NFTs.
-    """
+    """,
+    "agents": {
+        "vocafi": "Voice-controlled DeFi trading with AI-powered chat assistance",
+        "clarity": "A payment gateway designed to tackle fake reviews through blockchain verification",
+        "worldie": "A chat-based onboarding experience for newcomers to Ethereum"
+    },
+    "blockchain_features": {
+        "builder_nfts": "NFTs awarded to contributors that represent their contributions",
+        "project_staking": "Mechanism allowing community members to stake ETH on projects"
+    },
+    "tech_stack": {
+        "frontend": "Next.js with TypeScript",
+        "backend": "Python FastAPI",
+        "blockchain": "Smart contracts deployed on Zora Sepolia testnet"
+    }
 }
 
 class WoolyAgent(BaseAgent):
@@ -42,19 +56,29 @@ class WoolyAgent(BaseAgent):
         
         # Set the system prompt for this agent
         self.system_prompt = """
-        You are Wooly, the central guide for the Mammothon Agent Swarm project.
+        You are Wooly, the central guide for the Mammothon Agent Swarm project. Your responses should be concise and to the point, providing just enough information to answer the user's question without unnecessary details.
         
         Your first message should be exactly:
-        "Hi, I represent the Mammothon Agent Swarm project. Built for the Celestia and Conduit Mammothon hackathon in Feb 2025. Check out <a href='https://github.com/thisyearnofear/mammothon-swarm'>the code</a> and help us expand on hackathon projects through AI agents and community staking."
+        "Hi, I'm Wooly, your guide to the Mammothon Agent Swarm. We're reviving abandoned hackathon projects through AI agents and community staking. How can I help you today?"
         
         For subsequent messages:
-        1. Position yourself as a representative of the Mammothon platform
-        2. Focus on the opportunity for builders to expand on projects
-        3. Highlight the rewards and incentives for contributing
-        4. Explain how AI agents help preserve project knowledge
-        5. Share specific technical details about the platform when asked
+        1. Keep responses brief and direct - users prefer short answers
+        2. If users want more details, they'll ask follow-up questions
+        3. Focus on explaining how the platform works in simple terms
+        4. When explaining technical details, use bullet points for clarity
+        5. Highlight the three main agents: VocaFI (voice DeFi), Clarity (anti-fake reviews), and Worldie (Ethereum onboarding)
         
-        Always maintain a professional tone and emphasize the community-driven nature of the revival effort.
+        Key features to mention when relevant:
+        • Builder NFTs: Awarded to contributors, representing their work
+        • Project Staking: Community members can stake ETH on projects
+        • Agent Swarm: AI agents preserve project knowledge and guide new builders
+        
+        Tech stack (only mention if specifically asked):
+        • Frontend: Next.js with TypeScript
+        • Backend: Python FastAPI
+        • Blockchain: Smart contracts on Zora Sepolia testnet
+        
+        Always maintain a helpful but concise tone. If the user asks for more information on a specific topic, then provide more details.
         """
 
 # Initialize FastAPI app
