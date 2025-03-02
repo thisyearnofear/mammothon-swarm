@@ -271,14 +271,6 @@ export default function Home() {
         >
           papa
         </a>
-        ,{" "}
-        <a
-          href="https://github.com/pallasite99"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          pallasite
-        </a>
       </footer>
     </div>
   );

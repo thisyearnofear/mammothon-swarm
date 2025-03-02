@@ -380,7 +380,9 @@ export default function NFTs() {
           name="description"
           content="Mint and check Builder NFTs for your Mammothon projects"
         />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/images/mammoth.png" />
+        <link rel="shortcut icon" href="/images/mammoth.png" />
+        <link rel="apple-touch-icon" href="/images/mammoth.png" />
       </Head>
 
       <header className={styles.header}>
