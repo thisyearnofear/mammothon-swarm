@@ -279,14 +279,6 @@ export default function Home() {
         >
           pallasite
         </a>
-        ,{" "}
-        <a
-          href="https://github.com/SamuelAkpah"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          samuel
-        </a>
       </footer>
     </div>
   );

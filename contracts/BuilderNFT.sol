@@ -2,17 +2,18 @@
 pragma solidity ^0.8.20;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.0/contracts/access/Ownable2Step.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.0/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.0/contracts/token/ERC1155/ERC1155.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.0/contracts/token/ERC1155/extensions/ERC1155URIStorage.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.0/contracts/security/ReentrancyGuard.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.0/contracts/utils/Counters.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.0/contracts/utils/Strings.sol";
 
 /**
  * @title BuilderNFT
- * @dev A contract for issuing NFTs to builders who contribute to projects.
- * Enhanced with security features, validation, and improved data management.
+ * @dev A simplified ERC1155 contract for issuing NFTs to builders who contribute to projects.
+ * This version allows multiple mints for the same GitHub username and project combination.
  */
-contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
+contract BuilderNFT is ERC1155URIStorage, Ownable2Step, ReentrancyGuard {
     using Counters for Counters.Counter;
     using Strings for uint256;
     
@@ -21,8 +22,17 @@ contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
     // Maximum metadata URI length to prevent gas issues
     uint256 public constant MAX_URI_LENGTH = 2048;
     
+    // Price for minting an NFT (in wei)
+    uint256 public mintPrice = 0.001 ether;
+    
     // Mapping from token ID to project ID
     mapping(uint256 => bytes32) public tokenToProject;
+    
+    // Mapping from token ID to repository name
+    mapping(uint256 => string) public tokenToRepo;
+    
+    // Mapping from token ID to GitHub username
+    mapping(uint256 => string) public tokenToGithubUsername;
     
     // Mapping from GitHub username to token IDs
     mapping(string => uint256[]) private _githubToTokens;
@@ -30,43 +40,23 @@ contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
     // Mapping from project ID to token IDs
     mapping(bytes32 => uint256[]) private _projectToTokens;
     
-    // Mapping to track if a GitHub username has received an NFT for a specific project
-    // This prevents duplicate minting for the same contributor/project combination
-    mapping(bytes32 => mapping(bytes32 => bool)) private _hasReceivedNFT;
-    
     // Contract metadata URI for OpenSea and other platforms
     string private _contractMetadataURI;
-    
-    // Base URI for token metadata
-    string private _baseTokenURI;
     
     // Flag to enable/disable minting
     bool public mintingEnabled = true;
     
     // Events
-    event BuilderNFTMinted(uint256 indexed tokenId, address indexed recipient, string githubUsername, bytes32 indexed projectId);
-    event BaseURIUpdated(string newBaseURI);
-    event ContractURIUpdated(string newContractURI);
-    event MintingStatusChanged(bool enabled);
+    event BuilderNFTMinted(uint256 indexed tokenId, address indexed recipient, string githubUsername, bytes32 indexed projectId, string repoName);
+    event MintPriceUpdated(uint256 newPrice);
+    event FundsWithdrawn(address to, uint256 amount);
     
     /**
-     * @dev Constructor initializes the contract with name, symbol and optional baseURI.
-     * @param baseTokenURI Optional base URI for token metadata.
+     * @dev Constructor initializes the contract with a base URI.
+     * @param baseURI Base URI for token metadata.
      */
-    constructor(string memory baseTokenURI) ERC721("Mammothon Builder NFT", "MBUILDER") {
-        _baseTokenURI = baseTokenURI;
-    }
-    
-    /**
-     * @dev Checks if the GitHub username and project ID combination has already received an NFT.
-     * @param githubUsername The GitHub username.
-     * @param projectId The project ID.
-     * @return Boolean indicating if the combination has already received an NFT.
-     */
-    function hasReceivedNFT(string calldata githubUsername, string calldata projectId) public view returns (bool) {
-        bytes32 githubHash = keccak256(abi.encodePacked(githubUsername));
-        bytes32 projectHash = keccak256(abi.encodePacked(projectId));
-        return _hasReceivedNFT[githubHash][projectHash];
+    constructor(string memory baseURI) ERC1155(baseURI) {
+        // Initialize with base URI
     }
     
     /**
@@ -78,19 +68,52 @@ contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
     }
     
     /**
+     * @dev Set the price for minting an NFT.
+     * @param newPrice The new price in wei.
+     */
+    function setMintPrice(uint256 newPrice) external onlyOwner {
+        mintPrice = newPrice;
+        emit MintPriceUpdated(newPrice);
+    }
+    
+    /**
+     * @dev Withdraw funds from the contract to the owner.
+     * @param amount The amount to withdraw (0 for all).
+     */
+    function withdrawFunds(uint256 amount) external onlyOwner nonReentrant {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "BuilderNFT: no funds to withdraw");
+        
+        uint256 withdrawAmount = amount == 0 ? balance : amount;
+        require(withdrawAmount <= balance, "BuilderNFT: insufficient funds");
+        
+        (bool success, ) = payable(owner()).call{value: withdrawAmount}("");
+        require(success, "BuilderNFT: withdrawal failed");
+        
+        emit FundsWithdrawn(owner(), withdrawAmount);
+    }
+    
+    /**
      * @dev Mint a new Builder NFT for a developer contributing to a project.
      * @param recipient The address that will receive the NFT.
-     * @param tokenURI The metadata URI for the NFT (optional if baseURI is set).
+     * @param tokenURI The metadata URI for the NFT.
      * @param githubUsername The GitHub username of the builder.
      * @param projectId The project ID string.
+     * @param repoName The repository name.
      * @return newTokenId The ID of the newly minted NFT.
      */
     function mintBuilderNFT(
         address recipient,
         string calldata tokenURI,
         string calldata githubUsername,
-        string calldata projectId
-    ) external onlyOwner whenMintingEnabled nonReentrant returns (uint256 newTokenId) {
+        string calldata projectId,
+        string calldata repoName
+    ) public payable whenMintingEnabled nonReentrant returns (uint256 newTokenId) {
+        // Check if sender is owner or has paid the mint price
+        if (msg.sender != owner()) {
+            require(msg.value >= mintPrice, "BuilderNFT: insufficient payment");
+        }
+        
         require(recipient != address(0), "BuilderNFT: mint to the zero address");
         require(bytes(githubUsername).length > 0, "BuilderNFT: empty GitHub username");
         require(bytes(projectId).length > 0, "BuilderNFT: empty project ID");
@@ -99,27 +122,25 @@ contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
             require(bytes(tokenURI).length <= MAX_URI_LENGTH, "BuilderNFT: URI too long");
         }
         
-        // Create hash for GitHub username and project ID
-        bytes32 githubHash = keccak256(abi.encodePacked(githubUsername));
+        // Create hash for project ID
         bytes32 projectHash = keccak256(abi.encodePacked(projectId));
         
-        // Check if this combination already received an NFT
-        if(_hasReceivedNFT[githubHash][projectHash]) {
-            revert("BuilderNFT: contributor already received NFT for this project");
-        }
-        
+        // Generate a unique token ID
         _tokenIds.increment();
         newTokenId = _tokenIds.current();
         
-        _mint(recipient, newTokenId);
+        // Mint the token (quantity 1)
+        _mint(recipient, newTokenId, 1, "");
         
-        // Only set specific token URI if provided
+        // Set the token URI
         if(bytes(tokenURI).length > 0) {
-            _setTokenURI(newTokenId, tokenURI);
+            _setURI(newTokenId, tokenURI);
         }
         
-        // Store project ID for this token
+        // Store metadata for this token
         tokenToProject[newTokenId] = projectHash;
+        tokenToRepo[newTokenId] = repoName;
+        tokenToGithubUsername[newTokenId] = githubUsername;
         
         // Store token ID for this GitHub username
         _githubToTokens[githubUsername].push(newTokenId);
@@ -127,57 +148,16 @@ contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
         // Store token ID for this project
         _projectToTokens[projectHash].push(newTokenId);
         
-        // Mark this GitHub username and project ID combination as having received an NFT
-        _hasReceivedNFT[githubHash][projectHash] = true;
+        emit BuilderNFTMinted(newTokenId, recipient, githubUsername, projectHash, repoName);
         
-        emit BuilderNFTMinted(newTokenId, recipient, githubUsername, projectHash);
+        // Refund excess payment if any
+        uint256 excess = msg.value > mintPrice ? msg.value - mintPrice : 0;
+        if (excess > 0 && msg.sender != owner()) {
+            (bool success, ) = payable(msg.sender).call{value: excess}("");
+            require(success, "BuilderNFT: refund failed");
+        }
         
         return newTokenId;
-    }
-    
-    /**
-     * @dev Batch mint NFTs to multiple recipients.
-     * @param recipients Array of recipient addresses.
-     * @param tokenURIs Array of token URIs (can be empty if baseURI is set).
-     * @param githubUsernames Array of GitHub usernames.
-     * @param projectIds Array of project IDs.
-     * @return Array of newly minted token IDs.
-     */
-    function batchMintBuilderNFTs(
-        address[] calldata recipients,
-        string[] calldata tokenURIs,
-        string[] calldata githubUsernames,
-        string[] calldata projectIds
-    ) external onlyOwner whenMintingEnabled nonReentrant returns (uint256[] memory) {
-        uint256 length = recipients.length;
-        require(
-            length == githubUsernames.length && length == projectIds.length,
-            "BuilderNFT: array length mismatch"
-        );
-        
-        // TokenURIs array can be empty if we're using baseURI
-        if(tokenURIs.length > 0) {
-            require(length == tokenURIs.length, "BuilderNFT: tokenURIs array length mismatch");
-        }
-        
-        uint256[] memory newTokenIds = new uint256[](length);
-        
-        for(uint256 i = 0; i < length; i++) {
-            string memory tokenURI = tokenURIs.length > 0 ? tokenURIs[i] : "";
-            try this.mintBuilderNFT(
-                recipients[i],
-                tokenURI,
-                githubUsernames[i],
-                projectIds[i]
-            ) returns (uint256 newTokenId) {
-                newTokenIds[i] = newTokenId;
-            } catch {
-                // If one mint fails, we continue to the next one
-                newTokenIds[i] = 0;
-            }
-        }
-        
-        return newTokenIds;
     }
     
     /**
@@ -200,15 +180,33 @@ contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
     }
     
     /**
-     * @dev Get the project ID associated with a token.
+     * @dev Get the project ID hash associated with a token.
      * @param tokenId The token ID.
-     * @return The original project ID string.
-     * Note: This function cannot return the original string as bytes32 is a hash.
-     * It's provided for completeness, but clients will need to map the hash back to the original string.
+     * @return The project ID hash.
      */
     function getProjectHashByToken(uint256 tokenId) external view returns (bytes32) {
-        require(_exists(tokenId), "BuilderNFT: query for nonexistent token");
+        require(tokenId > 0 && tokenId <= _tokenIds.current(), "BuilderNFT: query for nonexistent token");
         return tokenToProject[tokenId];
+    }
+    
+    /**
+     * @dev Get the repository name associated with a token.
+     * @param tokenId The token ID.
+     * @return The repository name.
+     */
+    function getRepoByToken(uint256 tokenId) external view returns (string memory) {
+        require(tokenId > 0 && tokenId <= _tokenIds.current(), "BuilderNFT: query for nonexistent token");
+        return tokenToRepo[tokenId];
+    }
+    
+    /**
+     * @dev Get the GitHub username associated with a token.
+     * @param tokenId The token ID.
+     * @return The GitHub username.
+     */
+    function getGithubUsernameByToken(uint256 tokenId) external view returns (string memory) {
+        require(tokenId > 0 && tokenId <= _tokenIds.current(), "BuilderNFT: query for nonexistent token");
+        return tokenToGithubUsername[tokenId];
     }
     
     /**
@@ -220,21 +218,11 @@ contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
     }
     
     /**
-     * @dev Set the base URI for all token metadata.
-     * @param baseURI The new base URI.
-     */
-    function setBaseURI(string calldata baseURI) external onlyOwner {
-        _baseTokenURI = baseURI;
-        emit BaseURIUpdated(baseURI);
-    }
-    
-    /**
      * @dev Set the contract metadata URI for platforms like OpenSea.
      * @param newContractURI The new contract URI.
      */
     function setContractURI(string calldata newContractURI) external onlyOwner {
         _contractMetadataURI = newContractURI;
-        emit ContractURIUpdated(newContractURI);
     }
     
     /**
@@ -243,7 +231,6 @@ contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
      */
     function setMintingEnabled(bool enabled) external onlyOwner {
         mintingEnabled = enabled;
-        emit MintingStatusChanged(enabled);
     }
     
     /**
@@ -254,25 +241,43 @@ contract BuilderNFT is ERC721URIStorage, Ownable2Step, ReentrancyGuard {
     }
     
     /**
-     * @dev Base URI for computing {tokenURI}. If set, the resulting URI for each
-     * token will be the concatenation of the `baseURI` and the `tokenId`.
+     * @dev Checks if a GitHub username has any NFTs for a specific project.
+     * This function performs the check but does not prevent multiple mints for 
+     * the same GitHub username and project combination, as per ERC1155 design.
+     * @param githubUsername The GitHub username to check.
+     * @param projectId The project ID to check.
+     * @return hasTokens True if tokens exist for this combination, false otherwise.
+     * @return tokenCount The number of tokens this username has for this project.
      */
-    function _baseURI() internal view override returns (string memory) {
-        return _baseTokenURI;
+    function hasReceivedNFT(string calldata githubUsername, string calldata projectId) public view returns (bool hasTokens, uint256 tokenCount) {
+        // Get the project hash
+        bytes32 projectHash = keccak256(abi.encodePacked(projectId));
+        
+        // Get all tokens owned by this GitHub username
+        uint256[] memory userTokens = _githubToTokens[githubUsername];
+        
+        // Count how many tokens this user has for this project
+        uint256 count = 0;
+        for (uint256 i = 0; i < userTokens.length; i++) {
+            if (tokenToProject[userTokens[i]] == projectHash) {
+                count++;
+            }
+        }
+        
+        // Return both whether tokens exist and how many
+        return (count > 0, count);
     }
     
     /**
-     * @dev See {IERC721-supportsInterface}.
+     * @dev Returns the hash values for a GitHub username and project ID.
+     * @param githubUsername The GitHub username.
+     * @param projectId The project ID.
+     * @return githubHash The hash of the GitHub username.
+     * @return projectHash The hash of the project ID.
      */
-    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
-        return super.supportsInterface(interfaceId);
-    }
-    
-    /**
-     * @dev Returns true if the token exists.
-     * @param tokenId Token ID to check.
-     */
-    function _exists(uint256 tokenId) override internal view returns (bool) {
-        return tokenId > 0 && tokenId <= _tokenIds.current();
+    function getHashValues(string calldata githubUsername, string calldata projectId) public pure returns (bytes32 githubHash, bytes32 projectHash) {
+        githubHash = keccak256(abi.encodePacked(githubUsername));
+        projectHash = keccak256(abi.encodePacked(projectId));
+        return (githubHash, projectHash);
     }
 }

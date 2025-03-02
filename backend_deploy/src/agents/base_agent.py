@@ -1,5 +1,6 @@
 import os
 import swarmnode
+import requests
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -15,6 +16,7 @@ load_dotenv()
 swarmnode.api_key = os.getenv("SWARMNODE_API_KEY")
 openai_api_key = os.getenv("OPENAI_API_KEY")
 gemini_api_key = os.getenv("GEMINI_API_KEY")
+github_token = os.getenv("GITHUB_TOKEN", "")
 
 # Configure Gemini
 if gemini_api_key:
@@ -81,6 +83,110 @@ class BaseAgent:
         links_html += '</div>'
         return links_html
     
+    def get_github_data(self) -> Dict[str, Any]:
+        """Fetch GitHub data for the project if a GitHub repo is specified."""
+        if "github_repo" not in self.project_info:
+            return {}
+        
+        github_url = self.project_info["github_repo"]
+        if not github_url:
+            return {}
+        
+        # Extract owner and repo from GitHub URL
+        parts = github_url.strip('/').split('/')
+        if len(parts) < 5:
+            return {}
+        
+        owner = parts[-2]
+        repo = parts[-1]
+        
+        # Headers for GitHub API requests
+        headers = {"Authorization": f"token {github_token}"} if github_token else {}
+        
+        try:
+            # Get repo info
+            repo_response = requests.get(
+                f"https://api.github.com/repos/{owner}/{repo}",
+                headers=headers
+            )
+            repo_data = repo_response.json() if repo_response.status_code == 200 else {}
+            
+            # Get recent commits
+            commits_response = requests.get(
+                f"https://api.github.com/repos/{owner}/{repo}/commits?per_page=5",
+                headers=headers
+            )
+            commits_data = commits_response.json() if commits_response.status_code == 200 else []
+            
+            # Get recent forks
+            forks_response = requests.get(
+                f"https://api.github.com/repos/{owner}/{repo}/forks?per_page=5&sort=newest",
+                headers=headers
+            )
+            forks_data = forks_response.json() if forks_response.status_code == 200 else []
+            
+            # Format the data
+            github_data = {
+                "repo_info": {
+                    "stars": repo_data.get("stargazers_count", 0),
+                    "forks": repo_data.get("forks_count", 0),
+                    "watchers": repo_data.get("watchers_count", 0),
+                    "open_issues": repo_data.get("open_issues_count", 0),
+                    "last_updated": repo_data.get("updated_at", "")
+                },
+                "recent_commits": [
+                    {
+                        "message": commit.get("commit", {}).get("message", "").split("\n")[0],
+                        "author": commit.get("commit", {}).get("author", {}).get("name", ""),
+                        "date": commit.get("commit", {}).get("author", {}).get("date", "")
+                    } for commit in commits_data[:5]
+                ],
+                "recent_forks": [
+                    {
+                        "owner": fork.get("owner", {}).get("login", ""),
+                        "full_name": fork.get("full_name", ""),
+                        "created_at": fork.get("created_at", "")
+                    } for fork in forks_data[:5]
+                ]
+            }
+            
+            return github_data
+        except Exception as e:
+            print(f"Error fetching GitHub data: {e}")
+            return {}
+    
+    def get_github_summary(self) -> str:
+        """Generate a human-readable summary of GitHub activity."""
+        github_data = self.get_github_data()
+        if not github_data:
+            return ""
+        
+        repo_info = github_data.get("repo_info", {})
+        recent_commits = github_data.get("recent_commits", [])
+        recent_forks = github_data.get("recent_forks", [])
+        
+        summary = []
+        
+        # Repo stats
+        if repo_info:
+            summary.append(f"GitHub Stats: {repo_info.get('stars', 0)} stars, {repo_info.get('forks', 0)} forks, {repo_info.get('open_issues', 0)} open issues")
+        
+        # Recent commits
+        if recent_commits:
+            summary.append("Recent Activity:")
+            for commit in recent_commits[:3]:  # Show only the 3 most recent commits
+                author = commit.get("author", "")
+                message = commit.get("message", "")
+                if author and message:
+                    summary.append(f"- {author}: {message}")
+        
+        # Recent forks
+        if recent_forks:
+            fork_count = len(recent_forks)
+            summary.append(f"Recent Forks: {fork_count} developer{'s' if fork_count != 1 else ''} recently forked this project")
+            
+        return "\n".join(summary)
+    
     def get_chat_response(self, messages: List[Message], model_type: str = "gemini") -> str:
         """Generate a response to a chat message using either OpenAI or Gemini."""
         if not self.system_prompt:
@@ -99,11 +205,25 @@ class BaseAgent:
         # Get the last user message
         last_user_message = next((msg.content for msg in reversed(messages) if msg.role == "user"), "")
         
+        # Check if the user is asking about GitHub activity or project progress
+        github_keywords = ["progress", "activity", "github", "fork", "commit", "star", "contributor", "development", "momentum"]
+        should_include_github = any(keyword in last_user_message.lower() for keyword in github_keywords)
+        
+        # Get GitHub data if needed
+        github_summary = ""
+        if should_include_github:
+            github_summary = self.get_github_summary()
+        
+        # Enhance the prompt with GitHub data if available
+        enhanced_prompt = self.system_prompt
+        if github_summary:
+            enhanced_prompt += f"\n\nCurrent GitHub Activity:\n{github_summary}\n\nIncorporate this GitHub data naturally in your response if the user is asking about project progress or activity."
+        
         if model_type == "openai" and openai_api_key:
             try:
                 model = ChatOpenAI(api_key=openai_api_key, model="gpt-4")
                 messages_for_model = [
-                    SystemMessage(content=self.system_prompt),
+                    SystemMessage(content=enhanced_prompt),
                     HumanMessage(content=f"Conversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as the {self.name} agent:")
                 ]
                 response = model.invoke(messages_for_model)
@@ -121,7 +241,7 @@ class BaseAgent:
                 # Use the correct model name for Gemini Pro
                 print(f"Using Gemini API with key: {gemini_api_key[:5]}...")
                 model = genai.GenerativeModel('gemini-1.5-pro')
-                prompt = f"{self.system_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as the {self.name} agent:"
+                prompt = f"{enhanced_prompt}\n\nConversation history:\n{conversation_text}\n\nUser's latest message: {last_user_message}\n\nRespond as the {self.name} agent:"
                 
                 print(f"Sending prompt to Gemini: {prompt[:100]}...")
                 print(f"Safety settings: {safety_settings}")

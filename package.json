@@ -1,14 +1,14 @@
 {
     "name": "mammothon-agent-swarm",
     "version": "1.0.0",
-    "description": "A platform for reviving abandoned hackathon projects through AI agents and community staking",
+    "description": "A platform for expanding on hackathon projects through AI agents and community staking",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/udingethe/mammothon-agent-swarm.git"
+        "url": "git+https://github.com/thisyearnofear/mammothon-agent-swarm.git"
     },
     "keywords": [
         "blockchain",
@@ -21,9 +21,9 @@
     "author": "",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/udingethe/mammothon-agent-swarm/issues"
+        "url": "https://github.com/thisyearnofear/mammothon-swarm/issues"
     },
-    "homepage": "https://github.com/udingethe/mammothon-agent-swarm#readme",
+    "homepage": "https://github.com/thisyearnofear/mammothon-swarm#readme",
     "dependencies": {
         "axios": "^1.6.7",
         "dotenv": "^16.4.5",

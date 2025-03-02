@@ -16,9 +16,9 @@ headers = {"Authorization": f"token {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
 # List of projects to track
 TRACKED_PROJECTS = [
     {"owner": "Mazzz-zzz", "repo": "voca.fi", "name": "VocaFI"},
-    {"owner": "udingethe", "repo": "mammothon-agent-swarm", "name": "Mammothon"},
     {"owner": "Royleong31", "repo": "Clarity", "name": "Clarity"},
-    {"owner": "helloworldcomputer", "repo": "hwc", "name": "Hello World Computer"},
+    {"owner": "azf20", "repo": "hello-world-computer", "name": "Hello World Computer"},
+    {"owner": "thisyearnofear", "repo": "mammothon-swarm", "name": "Mammothon"},
 ]
 
 # Response models

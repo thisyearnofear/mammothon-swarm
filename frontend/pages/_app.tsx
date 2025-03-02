@@ -4,6 +4,14 @@ import type { AppProps } from "next/app";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import logger from "../src/lib/logger";
+import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { WagmiConfig } from "wagmi";
+import { wagmiConfig } from "../src/lib/wallet-config";
+import "@rainbow-me/rainbowkit/styles.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// Create a client
+const queryClient = new QueryClient();
 
 // Define the rate limit handler type
 type RateLimitHandler = <T>(
@@ -162,8 +170,16 @@ export default function App({ Component, pageProps }: AppProps) {
   }, []);
 
   return (
-    <div className={`page-transition ${pageLoading ? "page-loading" : ""}`}>
-      <Component {...pageProps} />
-    </div>
+    <WagmiConfig config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          <div
+            className={`page-transition ${pageLoading ? "page-loading" : ""}`}
+          >
+            <Component {...pageProps} />
+          </div>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiConfig>
   );
 }

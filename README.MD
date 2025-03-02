@@ -134,7 +134,10 @@ The BuilderNFT contract includes features such as:
 
 - Tracking GitHub usernames associated with NFTs
 - Mapping NFTs to specific projects
-- Preventing duplicate NFTs for the same contributor/project combination
+- Tracking repositories associated with contributions
+- Flexible uniqueness checks that can be configured by the contract owner
+- Support for multiple NFTs for different repositories under the same GitHub username/project combination
+- Simplified interface with a single minting function that accepts repository names
 
 ### Project Staking
 
@@ -159,7 +162,7 @@ The Project Staking contract allows community members to stake ETH on projects t
 
 ```bash
 # Clone the repository
-git clone https://github.com/udingethe/mammothon-agent-swarm.git
+git clone https://github.com/thisyearnofear/mammothon-swarm.git
 cd mammothon-agent-swarm
 
 # Set up environment variables

@@ -10,7 +10,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 // List of projects to track
 const TRACKED_PROJECTS = [
   { owner: "Mazzz-zzz", repo: "voca.fi", name: "VocaFI" },
-  { owner: "udingethe", repo: "mammothon-agent-swarm", name: "Mammothon" },
+  { owner: "thisyearnofear", repo: "mammothon-swarm", name: "Mammothon" },
   // Add other projects here
 ];
 
