@@ -25,10 +25,13 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://mammothon-swarm.vercel.app",
-        "https://kind-gwenora-papajams-0ddff9e5.koyeb.app"
-    ],  # Explicitly allow Vercel domain
+        "https://mammothon-swarm-*.vercel.app",  # Allow all preview deployments
+        "https://mammothon-swarm-git-*.vercel.app",  # Allow all git branch deployments
+        "https://kind-gwenora-papajams-0ddff9e5.koyeb.app",
+        "https://mammothon-backend-papajams-d9d0dedd.koyeb.app"
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["Content-Type", "X-Content-Type-Options"],
 )
