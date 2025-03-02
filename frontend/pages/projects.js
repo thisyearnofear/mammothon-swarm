@@ -56,17 +56,16 @@ function ClientOnly({ children, ...delegated }) {
 export default function Projects() {
   const { address, isConnected } = useAccount();
   const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [projectNFTs, setProjectNFTs] = useState({});
+  const [userStakes, setUserStakes] = useState({});
+  const [userBuilderNFTStakes, setUserBuilderNFTStakes] = useState({});
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [txPending, setTxPending] = useState(false);
   const [stakeAmount, setStakeAmount] = useState("");
   const [unstakeAmount, setUnstakeAmount] = useState("");
   const [selectedProject, setSelectedProject] = useState(null);
-  const [userStakes, setUserStakes] = useState({});
-  const [txPending, setTxPending] = useState(false);
-  const [projectNFTs, setProjectNFTs] = useState({});
-  const [projectActivity, setProjectActivity] = useState({});
-  const [builderNFTDetails, setBuilderNFTDetails] = useState({});
-  const [userBuilderNFTStakes, setUserBuilderNFTStakes] = useState({});
   const [selectedNFT, setSelectedNFT] = useState(null);
   const [nftStakeAmount, setNFTStakeAmount] = useState("");
   const [nftUnstakeAmount, setNFTUnstakeAmount] = useState("");
@@ -74,191 +73,248 @@ export default function Projects() {
   const [expandedProject, setExpandedProject] = useState(null);
   const [expandedBuilder, setExpandedBuilder] = useState(null);
   const [mintedNFTs, setMintedNFTs] = useState([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
+  const [projectBuilders, setProjectBuilders] = useState({});
 
-  // Load projects
-  useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        setLoading(true);
-        const projectsData = await getAllProjects();
-        setProjects(projectsData);
-        logger.info("Projects loaded:", projectsData.length);
+  // Load projects only when the loadData function is called
+  const loadProjects = async () => {
+    try {
+      setLoading(true);
+      const projectsData = await getAllProjects();
+      setProjects(projectsData);
+      logger.info("Projects loaded:", projectsData.length);
 
-        // Load NFTs for each project
-        const nftsData = {};
-        for (const project of projectsData) {
-          try {
-            const tokens = await getTokensForProject(project.id);
-            // For ERC1155, we need to get more details about each token
-            const tokenDetails = await Promise.all(
-              tokens.map(async (tokenId) => {
-                try {
-                  const contract = await getBuilderNFTContract();
-                  const githubUsername =
-                    await contract.getGithubUsernameByToken(tokenId);
-                  const repoName = await contract.getRepoByToken(tokenId);
-
-                  return {
-                    tokenId: tokenId.toString(),
-                    githubUsername,
-                    repoName,
-                  };
-                } catch (err) {
-                  logger.error(
-                    `Error getting details for token ${tokenId}:`,
-                    err
-                  );
-                  return { tokenId: tokenId.toString() };
-                }
-              })
-            );
-            nftsData[project.id] = tokenDetails;
-          } catch (error) {
-            logger.error(
-              `Error loading NFTs for project ${project.id}:`,
-              error
-            );
-            nftsData[project.id] = [];
-          }
-        }
-        setProjectNFTs(nftsData);
-
-        // Load activity data if integrations are available
-        if (
-          typeof getIndexedGitHubActivity === "function" &&
-          typeof getIndexedOnChainActivity === "function"
-        ) {
-          const activityData = {};
-          for (const project of projectsData) {
-            try {
-              const githubActivity = await getIndexedGitHubActivity(project.id);
-              const onChainActivity = await getIndexedOnChainActivity(
-                project.id
-              );
-
-              activityData[project.id] = {
-                github: githubActivity,
-                onChain: onChainActivity,
-              };
-            } catch (error) {
-              logger.error(
-                `Error loading activity for project ${project.id}:`,
-                error
-              );
-              activityData[project.id] = { github: null, onChain: null };
-            }
-          }
-          setProjectActivity(activityData);
-        }
-      } catch (error) {
-        setError("Failed to load projects");
-        logger.error("Error loading projects:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProjects();
-  }, []);
-
-  // Load user stakes when account changes
-  useEffect(() => {
-    const loadUserStakes = async () => {
-      if (!address || projects.length === 0) return;
-
-      try {
-        const stakes = {};
-        for (const project of projects) {
-          const stakeInfo = await getUserStakeInfo(project.id, address);
-          if (stakeInfo) {
-            stakes[project.id] = {
-              amount: stakeInfo.amount.toString(),
-              timestamp: new Date(
-                stakeInfo.timestamp.toNumber() * 1000
-              ).toLocaleString(),
-              active: stakeInfo.active,
-            };
-          }
-        }
-        setUserStakes(stakes);
-        logger.info("User stakes loaded:", stakes);
-      } catch (error) {
-        logger.error("Error loading user stakes:", error);
-      }
-    };
-
-    loadUserStakes();
-  }, [address, projects]);
-
-  // Load builder NFT details
-  useEffect(() => {
-    const loadBuilderNFTDetails = async () => {
-      if (Object.keys(projectNFTs).length === 0) return;
-
-      try {
-        const details = {};
-        const stakes = {};
-
-        // Iterate through all projects and their NFTs
-        for (const projectId in projectNFTs) {
-          for (const tokenId of projectNFTs[projectId]) {
-            try {
-              // Skip if we already have details for this token
-              if (details[tokenId]) continue;
-
-              // Get builder NFT details
-              const nftDetails = await getBuilderNFTDetails(tokenId);
-              details[tokenId] = {
-                ...nftDetails,
-                projectId,
-              };
-
-              // Get user's stake on this NFT if connected
-              if (address) {
-                const stakeInfo = await getUserBuilderNFTStakeInfo(
-                  tokenId,
-                  address
+      // Load NFTs for each project
+      const nftsData = {};
+      for (const project of projectsData) {
+        try {
+          const tokens = await getTokensForProject(project.id);
+          // For ERC1155, we need to get more details about each token
+          const tokenDetails = await Promise.all(
+            tokens.map(async (tokenId) => {
+              try {
+                const contract = await getBuilderNFTContract();
+                const githubUsername = await contract.getGithubUsernameByToken(
+                  tokenId
                 );
-                if (stakeInfo) {
-                  stakes[tokenId] = {
-                    amount: stakeInfo.amount.toString(),
-                    timestamp: new Date(
-                      stakeInfo.timestamp.toNumber() * 1000
-                    ).toLocaleString(),
-                    active: stakeInfo.active,
-                  };
-                }
+                const repoName = await contract.getRepoByToken(tokenId);
+
+                return {
+                  tokenId,
+                  githubUsername,
+                  repoName,
+                };
+              } catch (error) {
+                logger.error(
+                  `Error getting details for token ${tokenId}:`,
+                  error
+                );
+                return { tokenId, githubUsername: "", repoName: "" };
               }
-            } catch (error) {
-              logger.error(`Error loading details for NFT ${tokenId}:`, error);
+            })
+          );
+
+          nftsData[project.id] = tokenDetails;
+        } catch (error) {
+          logger.error(
+            `Error getting tokens for project ${project.id}:`,
+            error
+          );
+          nftsData[project.id] = [];
+        }
+      }
+      setProjectNFTs(nftsData);
+    } catch (error) {
+      setError("Failed to load projects: " + error.message);
+      logger.error("Error getting all projects:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load user stakes only when the loadData function is called
+  const loadUserStakes = async () => {
+    if (!address) return;
+
+    try {
+      const stakesData = {};
+      for (const project of projects) {
+        try {
+          const stake = await getUserStakeInfo(project.id, address);
+          stakesData[project.id] = stake;
+        } catch (error) {
+          logger.error(`Error getting stake for project ${project.id}:`, error);
+          stakesData[project.id] = { amount: 0, timestamp: 0, active: false };
+        }
+      }
+      setUserStakes(stakesData);
+      logger.info("User stakes loaded:", stakesData);
+    } catch (error) {
+      logger.error("Error loading user stakes:", error);
+    }
+  };
+
+  // Load builder NFT details only when the loadData function is called
+  const loadBuilderNFTDetails = async () => {
+    if (!address) return;
+
+    try {
+      const builderStakes = {};
+
+      // Check stakes for all minted NFTs
+      for (const nft of mintedNFTs) {
+        try {
+          const stake = await getUserBuilderNFTStakeInfo(nft.tokenId, address);
+          builderStakes[nft.tokenId] = stake;
+          console.log(`Loaded stake for NFT ${nft.tokenId}:`, stake);
+        } catch (error) {
+          logger.error(`Error getting stake for NFT ${nft.tokenId}:`, error);
+          builderStakes[nft.tokenId] = {
+            amount: 0,
+            timestamp: 0,
+            active: false,
+          };
+        }
+      }
+
+      setUserBuilderNFTStakes(builderStakes);
+      logger.info("User builder NFT stakes loaded:", builderStakes);
+    } catch (error) {
+      logger.error("Error loading builder NFT details:", error);
+    }
+  };
+
+  // Load minted NFTs only when the loadData function is called
+  const loadMintedNFTs = async () => {
+    try {
+      const nfts = await getAllMintedNFTs();
+      setMintedNFTs(nfts);
+      console.log("Loaded minted NFTs:", nfts);
+
+      // Organize builders by project
+      const buildersByProject = {};
+
+      for (const nft of nfts) {
+        // Get project ID from NFT attributes
+        const projectId = nft.attributes?.find(
+          (a) => a.trait_type === "Project"
+        )?.value;
+
+        if (projectId) {
+          if (!buildersByProject[projectId]) {
+            buildersByProject[projectId] = [];
+          }
+          buildersByProject[projectId].push(nft);
+        }
+      }
+
+      setProjectBuilders(buildersByProject);
+      console.log("Organized builders by project:", buildersByProject);
+    } catch (error) {
+      console.error("Error loading minted NFTs:", error);
+    }
+  };
+
+  // Calculate total stakes for a project including builder stakes
+  const calculateProjectTotalStakes = (project) => {
+    let totalStaked = parseFloat(project.totalStaked) || 0;
+    let stakersCount = parseInt(project.stakersCount) || 0;
+    let hasAddedUserAsStaker = false;
+
+    // Add stakes from builders
+    if (projectBuilders[project.id] && projectBuilders[project.id].length > 0) {
+      const buildersForProject = projectBuilders[project.id];
+
+      // Check each builder NFT for this project
+      buildersForProject.forEach((nft) => {
+        // Check if user has staked on this builder
+        if (userBuilderNFTStakes[nft.tokenId]) {
+          const userStakeAmount =
+            parseFloat(userBuilderNFTStakes[nft.tokenId].amount) / 1e18;
+
+          // Add user stake to total
+          if (userStakeAmount > 0) {
+            totalStaked += userStakeAmount;
+
+            // Count user as staker if not already counted
+            if (!hasAddedUserAsStaker && !userStakes[project.id]?.active) {
+              stakersCount += 1;
+              hasAddedUserAsStaker = true;
             }
           }
         }
+      });
+    }
 
-        setBuilderNFTDetails(details);
-        setUserBuilderNFTStakes(stakes);
-      } catch (error) {
-        logger.error("Error loading builder NFT details:", error);
-      }
+    return {
+      totalStaked: totalStaked > 0 ? totalStaked.toFixed(1) : "0.0",
+      stakersCount,
     };
+  };
 
-    loadBuilderNFTDetails();
-  }, [projectNFTs, address]);
+  // Combined function to load all data
+  const loadAllData = async () => {
+    if (loadingData) return;
 
-  // Load minted NFTs
+    setLoadingData(true);
+    setError(null);
+
+    try {
+      // First load projects
+      await loadProjects();
+
+      // Then load minted NFTs
+      await loadMintedNFTs();
+
+      // Then load user stakes (depends on projects)
+      if (projects.length > 0) {
+        await loadUserStakes();
+      }
+
+      // Finally load builder NFT stakes (depends on minted NFTs)
+      if (mintedNFTs.length > 0) {
+        await loadBuilderNFTDetails();
+      }
+
+      setDataLoaded(true);
+      setSuccess("Data loaded successfully!");
+    } catch (error) {
+      setError("Failed to load data: " + error.message);
+      logger.error("Error loading data:", error);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  // Function to refresh data
+  const refreshData = async () => {
+    if (loadingData) return;
+
+    setLoadingData(true);
+    setError(null);
+
+    try {
+      await loadMintedNFTs();
+      await loadBuilderNFTDetails();
+      await loadUserStakes();
+
+      setSuccess("Data refreshed successfully!");
+    } catch (error) {
+      setError("Failed to refresh data: " + error.message);
+      logger.error("Error refreshing data:", error);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  // Refresh data when address changes
   useEffect(() => {
-    const loadMintedNFTs = async () => {
-      try {
-        const nfts = await getAllMintedNFTs();
-        setMintedNFTs(nfts);
-        console.log("Loaded minted NFTs:", nfts);
-      } catch (error) {
-        console.error("Error loading minted NFTs:", error);
-      }
-    };
-
-    loadMintedNFTs();
-  }, []);
+    if (dataLoaded && address) {
+      loadUserStakes();
+      loadBuilderNFTDetails();
+    }
+  }, [address, dataLoaded, projects]);
 
   // Handle staking
   const handleStake = async (projectId) => {
@@ -371,30 +427,23 @@ export default function Projects() {
 
       // Refresh builder NFT details
       const nftDetails = await getBuilderNFTDetails(tokenId);
-      setBuilderNFTDetails({
-        ...builderNFTDetails,
+      setUserBuilderNFTStakes({
+        ...userBuilderNFTStakes,
         [tokenId]: {
-          ...builderNFTDetails[tokenId],
+          ...userBuilderNFTStakes[tokenId],
           ...nftDetails,
         },
       });
 
-      // Refresh user stake
-      const stakeInfo = await getUserBuilderNFTStakeInfo(tokenId, address);
-      if (stakeInfo) {
-        setUserBuilderNFTStakes({
-          ...userBuilderNFTStakes,
-          [tokenId]: {
-            amount: stakeInfo.amount.toString(),
-            timestamp: new Date(
-              stakeInfo.timestamp.toNumber() * 1000
-            ).toLocaleString(),
-            active: stakeInfo.active,
-          },
-        });
-      }
+      // Refresh project data
+      const projectsData = await getAllProjects();
+      setProjects(projectsData);
+
+      // Refresh minted NFTs to update totals
+      await loadMintedNFTs();
 
       setNFTStakeAmount("");
+      setSuccess("Successfully staked on builder!");
       logger.info("Successfully staked on builder NFT:", tokenId);
     } catch (error) {
       setError("Failed to stake on NFT: " + error.message);
@@ -422,13 +471,6 @@ export default function Projects() {
 
       // Refresh builder NFT details
       const nftDetails = await getBuilderNFTDetails(tokenId);
-      setBuilderNFTDetails({
-        ...builderNFTDetails,
-        [tokenId]: {
-          ...builderNFTDetails[tokenId],
-          ...nftDetails,
-        },
-      });
 
       // Refresh user stake
       const stakeInfo = await getUserBuilderNFTStakeInfo(tokenId, address);
@@ -450,7 +492,15 @@ export default function Projects() {
         setUserBuilderNFTStakes(newUserStakes);
       }
 
+      // Refresh project data
+      const projectsData = await getAllProjects();
+      setProjects(projectsData);
+
+      // Refresh minted NFTs to update totals
+      await loadMintedNFTs();
+
       setNFTUnstakeAmount("");
+      setSuccess("Successfully unstaked from builder!");
       logger.info("Successfully unstaked from builder NFT:", tokenId);
     } catch (error) {
       setError("Failed to unstake from NFT: " + error.message);
@@ -507,6 +557,182 @@ export default function Projects() {
     }
   };
 
+  // Render a builder card with minimal styling
+  const renderBuilderCard = (nft) => {
+    // Calculate total staked amount for this builder
+    const userStakeAmount = userBuilderNFTStakes[nft.tokenId]
+      ? parseFloat(userBuilderNFTStakes[nft.tokenId].amount) / 1e18
+      : 0;
+
+    return (
+      <div key={nft.tokenId} className={styles.builderItem}>
+        <div
+          className={styles.builderHeader}
+          onClick={() =>
+            setExpandedBuilder(
+              expandedBuilder === nft.tokenId ? null : nft.tokenId
+            )
+          }
+        >
+          <div className={styles.builderSummary}>
+            <div className={styles.builderInfo}>
+              <h3>{nft.githubUsername}</h3>
+            </div>
+            <div className={styles.builderStats}>
+              <span>
+                {userStakeAmount > 0 ? `${userStakeAmount} MON` : "0 MON"}
+              </span>
+              <span className={styles.expandIcon}>
+                {expandedBuilder === nft.tokenId ? "▼" : "▶"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {expandedBuilder === nft.tokenId && (
+          <div className={styles.builderExpanded}>
+            <div className={styles.builderMetadata}>
+              <div className={styles.metadataItem}>
+                <span>Project:</span>
+                <Link
+                  href={`/?project=${
+                    nft.attributes?.find((a) => a.trait_type === "Project")
+                      ?.value || ""
+                  }`}
+                  className={styles.projectLink}
+                >
+                  {projects.find(
+                    (p) =>
+                      p.id ===
+                      nft.attributes?.find((a) => a.trait_type === "Project")
+                        ?.value
+                  )?.name ||
+                    nft.attributes?.find((a) => a.trait_type === "Project")
+                      ?.value ||
+                    "Unknown"}
+                </Link>
+              </div>
+
+              <div className={styles.metadataItem}>
+                <span>Repository URL:</span>
+                <a
+                  href={`https://github.com/${nft.githubUsername}/${nft.repoName}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.repoLink}
+                >
+                  {`github.com/${nft.githubUsername}/${nft.repoName}`}
+                </a>
+              </div>
+
+              {nft.attributes?.find(
+                (attr) => attr.trait_type === "Twitter"
+              ) && (
+                <div className={styles.metadataItem}>
+                  <span>Twitter:</span>
+                  <a
+                    href={`https://x.com/${nft.attributes
+                      .find((attr) => attr.trait_type === "Twitter")
+                      .value.replace("@", "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.socialLink}
+                  >
+                    {
+                      nft.attributes.find(
+                        (attr) => attr.trait_type === "Twitter"
+                      ).value
+                    }
+                  </a>
+                </div>
+              )}
+
+              {nft.attributes?.find(
+                (attr) => attr.trait_type === "Farcaster"
+              ) && (
+                <div className={styles.metadataItem}>
+                  <span>Farcaster:</span>
+                  <a
+                    href={`https://warpcast.com/${nft.attributes
+                      .find((attr) => attr.trait_type === "Farcaster")
+                      .value.replace("@", "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.socialLink}
+                  >
+                    {
+                      nft.attributes.find(
+                        (attr) => attr.trait_type === "Farcaster"
+                      ).value
+                    }
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {userStakeAmount > 0 && (
+              <div className={styles.userStake}>
+                <p>Your Stake: {userStakeAmount} MON</p>
+              </div>
+            )}
+
+            <div className={styles.stakingControls}>
+              <div className={styles.stakeForm}>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="MON amount"
+                  value={selectedNFT === nft.tokenId ? nftStakeAmount : ""}
+                  onChange={(e) => {
+                    setSelectedNFT(nft.tokenId);
+                    setNFTStakeAmount(e.target.value);
+                  }}
+                  className={styles.amountInput}
+                />
+                <button
+                  onClick={() => handleStakeOnNFT(nft.tokenId)}
+                  disabled={txPending}
+                  className={styles.stakeButton}
+                >
+                  {txPending && selectedNFT === nft.tokenId
+                    ? "Staking..."
+                    : "Support Builder"}
+                </button>
+              </div>
+
+              {userStakeAmount > 0 && (
+                <div className={styles.unstakeForm}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="MON amount"
+                    value={selectedNFT === nft.tokenId ? nftUnstakeAmount : ""}
+                    onChange={(e) => {
+                      setSelectedNFT(nft.tokenId);
+                      setNFTUnstakeAmount(e.target.value);
+                    }}
+                    className={styles.amountInput}
+                  />
+                  <button
+                    onClick={() => handleUnstakeFromNFT(nft.tokenId)}
+                    disabled={txPending}
+                    className={styles.unstakeButton}
+                  >
+                    {txPending && selectedNFT === nft.tokenId
+                      ? "Unstaking..."
+                      : "Unstake"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -555,10 +781,40 @@ export default function Projects() {
             <ConnectButton chainStatus="icon" showBalance={false} />
           </div>
 
+          {!dataLoaded ? (
+            <div className={styles.dataLoadSection}>
+              <p>Load blockchain data to view projects and builders</p>
+              <button
+                onClick={loadAllData}
+                disabled={loadingData}
+                className={styles.loadDataButton}
+              >
+                {loadingData ? "Loading..." : "Load Data"}
+              </button>
+            </div>
+          ) : (
+            <div className={styles.refreshSection}>
+              <button
+                onClick={refreshData}
+                disabled={loadingData}
+                className={styles.refreshButton}
+              >
+                {loadingData ? "Refreshing..." : "Refresh Data"}
+              </button>
+            </div>
+          )}
+
           {error && (
             <div className={styles.error}>
               <p>{error}</p>
               <button onClick={() => setError(null)}>Dismiss</button>
+            </div>
+          )}
+
+          {success && (
+            <div className={styles.success}>
+              <p>{success}</p>
+              <button onClick={() => setSuccess(null)}>Dismiss</button>
             </div>
           )}
 
@@ -603,8 +859,16 @@ export default function Projects() {
                   >
                     <h2>{project.name}</h2>
                     <div className={styles.projectSummary}>
-                      <span>{project.totalStaked} MON</span>
-                      <span>{project.stakersCount} Stakers</span>
+                      {(() => {
+                        const { totalStaked, stakersCount } =
+                          calculateProjectTotalStakes(project);
+                        return (
+                          <>
+                            <span>{totalStaked} MON</span>
+                            <span>{stakersCount} Stakers</span>
+                          </>
+                        );
+                      })()}
                       <span className={styles.expandIcon}>
                         {expandedProject === project.id ? "▼" : "▶"}
                       </span>
@@ -613,80 +877,40 @@ export default function Projects() {
 
                   {expandedProject === project.id && (
                     <div className={styles.projectExpanded}>
-                      {userStakes[project.id] && (
-                        <div className={styles.userStake}>
-                          <p>
-                            Your Stake:{" "}
-                            {parseFloat(userStakes[project.id].amount) / 1e18}{" "}
-                            MON
-                          </p>
-                        </div>
-                      )}
-
-                      <div className={styles.stakingControls}>
-                        <div className={styles.stakeForm}>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            placeholder="MON amount"
-                            value={
-                              selectedProject === project.id ? stakeAmount : ""
-                            }
-                            onChange={(e) => {
-                              setSelectedProject(project.id);
-                              setStakeAmount(e.target.value);
-                            }}
-                            className={styles.amountInput}
-                          />
-                          <button
-                            onClick={() => handleStake(project.id)}
-                            disabled={txPending}
-                            className={styles.stakeButton}
-                          >
-                            {txPending && selectedProject === project.id
-                              ? "Staking..."
-                              : "Stake"}
-                          </button>
-                        </div>
-
-                        {userStakes[project.id] && (
-                          <div className={styles.unstakeForm}>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              placeholder="MON amount"
-                              value={
-                                selectedProject === project.id
-                                  ? unstakeAmount
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                setSelectedProject(project.id);
-                                setUnstakeAmount(e.target.value);
-                              }}
-                              className={styles.amountInput}
-                            />
-                            <button
-                              onClick={() => handleUnstake(project.id)}
-                              disabled={txPending}
-                              className={styles.unstakeButton}
-                            >
-                              {txPending && selectedProject === project.id
-                                ? "Unstaking..."
-                                : "Unstake"}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
                       <Link
                         href={`/?project=${project.id}`}
                         className={styles.learnMore}
                       >
                         Learn more about this project from our agents →
                       </Link>
+
+                      {/* Display builders for this project */}
+                      <div className={styles.projectBuilders}>
+                        <h3 className={styles.buildersTitle}>
+                          Builders working on this project:
+                        </h3>
+
+                        {projectBuilders[project.id] &&
+                        projectBuilders[project.id].length > 0 ? (
+                          <div className={styles.projectBuildersList}>
+                            {projectBuilders[project.id].map((nft) =>
+                              renderBuilderCard(nft)
+                            )}
+                          </div>
+                        ) : (
+                          <p className={styles.noBuilders}>
+                            No builders found for this project yet.
+                          </p>
+                        )}
+
+                        <button
+                          onClick={() => handleSyncBuilderNFTs(project.id)}
+                          disabled={txPending}
+                          className={styles.syncButton}
+                        >
+                          {txPending ? "Syncing..." : "Sync Builder NFTs"}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -699,185 +923,7 @@ export default function Projects() {
                   <p>No builders found for the current projects.</p>
                 </div>
               ) : (
-                mintedNFTs.map((nft) => (
-                  <div key={nft.tokenId} className={styles.builderItem}>
-                    <div
-                      className={styles.builderHeader}
-                      onClick={() =>
-                        setExpandedBuilder(
-                          expandedBuilder === nft.tokenId ? null : nft.tokenId
-                        )
-                      }
-                    >
-                      <div className={styles.builderSummary}>
-                        <div className={styles.builderInfo}>
-                          <h3>{nft.githubUsername}</h3>
-                          <span className={styles.projectName}>
-                            {
-                              projects.find(
-                                (p) =>
-                                  p.id ===
-                                  nft.attributes?.find(
-                                    (a) => a.trait_type === "Project"
-                                  )?.value
-                              )?.name
-                            }
-                          </span>
-                        </div>
-                        <div className={styles.builderStats}>
-                          <span>{nft.totalStaked || "0"} MON</span>
-                          <span className={styles.expandIcon}>
-                            {expandedBuilder === nft.tokenId ? "▼" : "▶"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {expandedBuilder === nft.tokenId && (
-                      <div className={styles.builderExpanded}>
-                        <div className={styles.builderMetadata}>
-                          <div className={styles.metadataItem}>
-                            <span>Project:</span>
-                            <Link
-                              href={`/?project=${
-                                nft.attributes?.find(
-                                  (a) => a.trait_type === "Project"
-                                )?.value
-                              }`}
-                              className={styles.projectLink}
-                            >
-                              {
-                                projects.find(
-                                  (p) =>
-                                    p.id ===
-                                    nft.attributes?.find(
-                                      (a) => a.trait_type === "Project"
-                                    )?.value
-                                )?.name
-                              }
-                            </Link>
-                          </div>
-                          <div className={styles.metadataItem}>
-                            <span>Vision:</span>
-                            <p className={styles.vision}>{nft.description}</p>
-                          </div>
-                          <div className={styles.metadataItem}>
-                            <span>Repository:</span>
-                            <a
-                              href={`https://github.com/${nft.githubUsername}/${nft.repoName}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={styles.repoLink}
-                            >
-                              {nft.repoName}
-                            </a>
-                          </div>
-                          {nft.attributes?.map(
-                            (attr) =>
-                              attr.trait_type !== "Project" &&
-                              attr.trait_type !== "GitHub" && (
-                                <div
-                                  key={attr.trait_type}
-                                  className={styles.metadataItem}
-                                >
-                                  <span>{attr.trait_type}:</span>
-                                  {attr.trait_type === "Twitter" ? (
-                                    <a
-                                      href={`https://twitter.com/${attr.value.replace(
-                                        "@",
-                                        ""
-                                      )}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className={styles.socialLink}
-                                    >
-                                      {attr.value}
-                                    </a>
-                                  ) : (
-                                    <span>{attr.value}</span>
-                                  )}
-                                </div>
-                              )
-                          )}
-                        </div>
-
-                        {userBuilderNFTStakes[nft.tokenId] && (
-                          <div className={styles.userStake}>
-                            <p>
-                              Your Stake:{" "}
-                              {parseFloat(
-                                userBuilderNFTStakes[nft.tokenId].amount
-                              ) / 1e18}{" "}
-                              MON
-                            </p>
-                          </div>
-                        )}
-
-                        <div className={styles.stakingControls}>
-                          <div className={styles.stakeForm}>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              placeholder="MON amount"
-                              value={
-                                selectedNFT === nft.tokenId
-                                  ? nftStakeAmount
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                setSelectedNFT(nft.tokenId);
-                                setNFTStakeAmount(e.target.value);
-                              }}
-                              className={styles.amountInput}
-                            />
-                            <button
-                              onClick={() => handleStakeOnNFT(nft.tokenId)}
-                              disabled={txPending}
-                              className={styles.stakeButton}
-                            >
-                              {txPending && selectedNFT === nft.tokenId
-                                ? "Staking..."
-                                : "Support Builder"}
-                            </button>
-                          </div>
-
-                          {userBuilderNFTStakes[nft.tokenId] && (
-                            <div className={styles.unstakeForm}>
-                              <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="MON amount"
-                                value={
-                                  selectedNFT === nft.tokenId
-                                    ? nftUnstakeAmount
-                                    : ""
-                                }
-                                onChange={(e) => {
-                                  setSelectedNFT(nft.tokenId);
-                                  setNFTUnstakeAmount(e.target.value);
-                                }}
-                                className={styles.amountInput}
-                              />
-                              <button
-                                onClick={() =>
-                                  handleUnstakeFromNFT(nft.tokenId)
-                                }
-                                disabled={txPending}
-                                className={styles.unstakeButton}
-                              >
-                                {txPending && selectedNFT === nft.tokenId
-                                  ? "Unstaking..."
-                                  : "Unstake"}
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))
+                mintedNFTs.map((nft) => renderBuilderCard(nft))
               )}
             </div>
           )}
