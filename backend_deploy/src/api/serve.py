@@ -63,10 +63,13 @@ async def root():
 def import_agent_module(agent_name):
     """Dynamically import an agent module."""
     try:
-        # Construct the module path
-        module_path = f"src.agents.{agent_name}_agent"
-        
-        # Import the module
+        # Add the parent directory to sys.path
+        parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if parent_dir not in sys.path:
+            sys.path.append(parent_dir)
+            
+        # Import the module using absolute import
+        module_path = f"agents.{agent_name}_agent"
         module = __import__(module_path, fromlist=['app'])
         
         # Return the FastAPI app from the module
@@ -107,8 +110,13 @@ async def list_agents():
     
     for agent_name in AVAILABLE_AGENTS:
         try:
-            # Import the agent module to get its info
-            module_path = f"src.agents.{agent_name}_agent"
+            # Add the parent directory to sys.path if not already added
+            parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            if parent_dir not in sys.path:
+                sys.path.append(parent_dir)
+                
+            # Import the agent module using absolute import
+            module_path = f"agents.{agent_name}_agent"
             module = __import__(module_path, fromlist=[agent_instance_names[agent_name]])
             
             # Get the agent instance using the correct variable name

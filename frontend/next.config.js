@@ -70,9 +70,9 @@ const nextConfig = {
       {
         source: "/api/:path*",
         destination:
-          process.env.NODE_ENV === "production"
-            ? "https://kind-gwenora-papajams-0ddff9e5.koyeb.app/api/:path*"
-            : "http://localhost:8001/api/:path*",
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:8000/api/:path*"
+            : `${process.env.NEXT_PUBLIC_API_URL_PRODUCTION}/api/:path*`,
       },
     ];
   },

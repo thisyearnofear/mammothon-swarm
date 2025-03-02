@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 
-from src.agents.base_agent import BaseAgent, Message, ChatRequest, ChatResponse
+from agents.base_agent import BaseAgent, Message, ChatRequest, ChatResponse
 
 # Define Mammothon project details
 MAMMOTHON_PROJECT = {

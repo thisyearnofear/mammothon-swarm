@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 
-from src.agents.base_agent import BaseAgent, Message, ChatRequest, ChatResponse
+from agents.base_agent import BaseAgent, Message, ChatRequest, ChatResponse
 
 # Load environment variables
 load_dotenv()
