@@ -173,6 +173,8 @@ cp .env.example .env
 koyeb deploy backend_deploy mammothon-backend/backend-api --ports 8000:http --routes /:8000 --archive-builder docker --archive-docker-dockerfile Dockerfile.backend --env "GEMINI_API_KEY=your_key_here" --env "PORT=8000"
 ```
 
+Run locally: python src/api/serve.py
+
 ### Frontend Setup
 
 ```bash
