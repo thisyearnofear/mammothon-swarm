@@ -1,6 +1,6 @@
 # Mammothon Agent Swarm
 
-A platform for reviving abandoned hackathon projects through AI agents and community staking.
+A platform for building on promising hackathon projects through AI agents and community staking.
 
 ## Overview
 
