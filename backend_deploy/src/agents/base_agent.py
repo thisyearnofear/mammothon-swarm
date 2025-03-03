@@ -219,6 +219,20 @@ class BaseAgent:
         if github_summary:
             enhanced_prompt += f"\n\nCurrent GitHub Activity:\n{github_summary}\n\nIncorporate this GitHub data naturally in your response if the user is asking about project progress or activity."
         
+        # Add common response structure
+        enhanced_prompt += """
+        
+        Response Guidelines:
+        1. Keep responses brief and direct - users prefer short answers
+        2. Focus on explaining what makes this project unique and valuable
+        3. If users want more details, they'll ask follow-up questions
+        4. For questions about staking, NFTs, or the overall platform, direct users to speak with Wooly
+        5. End each response with a clear call to action:
+           - Fork and build: "Ready to build? Fork our code and mint a builder NFT"
+           - Stake: "Support this project by staking MON tokens"
+           - Learn more: "Want to learn more about the platform? Chat with Wooly"
+        """
+        
         if model_type == "openai" and openai_api_key:
             try:
                 model = ChatOpenAI(api_key=openai_api_key, model="gpt-4")
